@@ -5,7 +5,13 @@ from src.embeddings.vector_store import (
     create_embeddings,
     build_faiss_index,
 )
-from src.retrieval.reranker import load_reranker_model
+from src.retrieval.reranker import (
+    load_reranker_model,
+    rerank_results,
+    get_top_reranked,
+    print_reranked_results,
+)
+
 from src.retrieval.retriever import hybrid_search, inspect_retrieval
 from src.retrieval.metadata_filter import (
     get_document_filter,
@@ -91,6 +97,23 @@ inspect_retrieval("Which projects used Python?", embedding_model, index, chunks)
 question = "Which AWS certifications do I have?"
 document_type = get_document_filter(question)
 print_metadata_filter(question, document_type)
+
+# ==========================================================
+# STEP 9 : Reranking Testing
+# ==========================================================
+question = "Which projects used Python?"
+retrieved_indices = hybrid_search(
+    question, embedding_model, index, chunks, semantic_k=10, final_k=10
+)
+
+ranked_results = rerank_results(question, retrieved_indices, chunks, reranker)
+print_reranked_results(ranked_results)
+top_chunks = get_top_reranked(ranked_results, top_n=3)
+
+print()
+print("TOP CHUNKS")
+print(top_chunks)
+
 
 if __name__ == "__main__":
     pass
