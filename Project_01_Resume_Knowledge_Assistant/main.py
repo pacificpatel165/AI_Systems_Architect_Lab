@@ -19,6 +19,13 @@ from src.retrieval.metadata_filter import (
     print_metadata_filter,
 )
 
+from src.memory.conversation_memory import (
+    conversation_memory,
+    build_memory_context,
+    save_to_memory,
+    print_memory_stats,
+)
+
 # ==========================================================
 # STEP 1 : Load Documents
 # ==========================================================
@@ -113,6 +120,27 @@ top_chunks = get_top_reranked(ranked_results, top_n=3)
 print()
 print("TOP CHUNKS")
 print(top_chunks)
+
+# ==========================================================
+# STEP 9 : Memory Conversation Testing
+# ==========================================================
+save_to_memory(
+    question="Which projects used Python?",
+    answer="PMA and TA5K",
+    top_indices=top_chunks,
+    chunks=chunks,
+    conversation_memory=conversation_memory,
+)
+save_to_memory(
+    question="Which company was that for?",
+    answer="Adtran",
+    top_indices=top_chunks,
+    chunks=chunks,
+    conversation_memory=conversation_memory,
+)
+memory_context = build_memory_context(conversation_memory, max_turns=5)
+print(memory_context)
+print_memory_stats(conversation_memory)
 
 
 if __name__ == "__main__":
