@@ -1,0 +1,39 @@
+# ==========================================================
+# Configuration
+# ==========================================================
+from pathlib import Path
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+# ----------------------------------------------------------
+# Project Paths
+# ----------------------------------------------------------
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DATA_DIR = PROJECT_ROOT/"data"
+DOCUMENT_FOLDER = (DATA_DIR/"documents")
+FAISS_DIR = (DATA_DIR/"faiss")
+MEMORY_DIR = (DATA_DIR/"memory")
+
+# ----------------------------------------------------------
+# Gemini
+# ----------------------------------------------------------
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+# ----------------------------------------------------------
+# RAG Settings
+# ----------------------------------------------------------
+USE_LLM = False
+DEBUG_MODE = True
+CHUNK_SIZE = 800
+OVERLAP = 200
+TOP_K = 5
+MAX_MEMORY_TURNS = 5
+
+# ----------------------------------------------------------
+# Models
+# ----------------------------------------------------------
+EMBEDDING_MODEL_NAME = ("all-MiniLM-L6-v2")
+RERANKER_MODEL_NAME = ("cross-encoder/ms-marco-MiniLM-L-6-v2")
