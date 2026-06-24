@@ -7,6 +7,11 @@ from src.embeddings.vector_store import (
 )
 from src.retrieval.reranker import load_reranker_model
 from src.retrieval.retriever import hybrid_search, inspect_retrieval
+from src.retrieval.metadata_filter import (
+    get_document_filter,
+    filter_retrieved_results,
+    print_metadata_filter,
+)
 
 # ==========================================================
 # STEP 1 : Load Documents
@@ -79,6 +84,13 @@ if DEBUG_MODE:
 # ==========================================================
 inspect_retrieval("Which projects used Python?", embedding_model, index, chunks)
 
+
+# ==========================================================
+# STEP 8 : Quick Metadata Filter Testing
+# ==========================================================
+question = "Which AWS certifications do I have?"
+document_type = get_document_filter(question)
+print_metadata_filter(question, document_type)
 
 if __name__ == "__main__":
     pass
