@@ -33,6 +33,12 @@ TOP_K = 5
 MAX_MEMORY_TURNS = 5
 
 # ----------------------------------------------------------
+# Compression Settings
+# ----------------------------------------------------------
+ENABLE_KEYWORD_COMPRESSION = True
+ENABLE_SEMANTIC_COMPRESSION = True
+
+# ----------------------------------------------------------
 # Models
 # ----------------------------------------------------------
 EMBEDDING_MODEL_NAME = ("all-MiniLM-L6-v2")

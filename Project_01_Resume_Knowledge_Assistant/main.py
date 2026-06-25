@@ -30,6 +30,8 @@ from src.retrieval.parent_retriever import (
     build_parent_context,
     print_parent_summary,
 )
+from src.retrieval.compressor import compress_context, print_compression_stats
+
 
 # ==========================================================
 # STEP 1 : Load Documents
@@ -67,7 +69,6 @@ print("System Initialized")
 # STEP 6 : Debug Information
 # ==========================================================
 if DEBUG_MODE:
-
     print()
     print("=" * 80)
     print("DEBUG MODE ENABLED")
@@ -185,9 +186,28 @@ def test_parent_retrieval():
 
 
 # ==========================================================
+# TEST 7 : Context Compression
+# ==========================================================
+def test_context_compression():
+    question = "Which company was PMA developed for?"
+    retrieved = hybrid_search(question, embedding_model, index, chunks)
+    ranked = rerank_results(question, retrieved, chunks, reranker)
+    top = get_top_reranked(ranked)
+    parents = get_parent_ids(top, chunks)
+    original_context = build_parent_context(parents, parent_documents)
+    compressed = compress_context(question, original_context, embedding_model)
+    print_compression_stats(original_context, compressed)
+    print()
+    print("=" * 80)
+    print("COMPRESSED CONTEXT")
+    print("=" * 80)
+    print(compressed[:1500])
+
+
+# ==========================================================
 # TEST MODE
 # ==========================================================
-TEST_MODE = "parent"
+TEST_MODE = "compression"
 
 if TEST_MODE == "retrieval":
     test_hybrid_retrieval()
@@ -201,6 +221,8 @@ elif TEST_MODE == "rewrite":
     test_query_rewriting()
 elif TEST_MODE == "parent":
     test_parent_retrieval()
+elif TEST_MODE == "compression":
+    test_context_compression()
 elif TEST_MODE == "all":
     test_hybrid_retrieval()
     test_metadata_filter()
@@ -208,6 +230,7 @@ elif TEST_MODE == "all":
     test_memory()
     test_query_rewriting()
     test_parent_retrieval()
+    test_context_compression()
 
 if __name__ == "__main__":
     pass
