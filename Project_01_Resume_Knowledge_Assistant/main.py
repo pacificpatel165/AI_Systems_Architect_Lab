@@ -31,7 +31,11 @@ from src.retrieval.parent_retriever import (
     print_parent_summary,
 )
 from src.retrieval.compressor import compress_context, print_compression_stats
-
+from src.retrieval.strategy import (
+    classify_question,
+    get_retrieval_strategy,
+    print_strategy,
+)
 
 # ==========================================================
 # STEP 1 : Load Documents
@@ -205,9 +209,25 @@ def test_context_compression():
 
 
 # ==========================================================
+# TEST 7 : Strategy Classification
+# ==========================================================
+def test_strategy():
+    questions = [
+        "NETCONF",
+        "Which AWS certifications do I have?",
+        "Which company was that for?",
+        "Explain PMA project.",
+    ]
+    for question in questions:
+        query_type = classify_question(question)
+        strategy = get_retrieval_strategy(query_type)
+        print_strategy(question, query_type, strategy)
+
+
+# ==========================================================
 # TEST MODE
 # ==========================================================
-TEST_MODE = "compression"
+TEST_MODE = "strategy"  # Options: retrieval, metadata, reranker, memory, rewrite, parent, compression, strategy, all
 
 if TEST_MODE == "retrieval":
     test_hybrid_retrieval()
@@ -223,6 +243,8 @@ elif TEST_MODE == "parent":
     test_parent_retrieval()
 elif TEST_MODE == "compression":
     test_context_compression()
+elif TEST_MODE == "strategy":
+    test_strategy()
 elif TEST_MODE == "all":
     test_hybrid_retrieval()
     test_metadata_filter()
@@ -231,6 +253,7 @@ elif TEST_MODE == "all":
     test_query_rewriting()
     test_parent_retrieval()
     test_context_compression()
+    test_strategy()
 
 if __name__ == "__main__":
     pass
