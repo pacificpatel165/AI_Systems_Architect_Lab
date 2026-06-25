@@ -36,6 +36,7 @@ from src.retrieval.strategy import (
     get_retrieval_strategy,
     print_strategy,
 )
+from src.app.resume_assistant import ResumeAssistant
 
 # ==========================================================
 # STEP 1 : Load Documents
@@ -209,7 +210,7 @@ def test_context_compression():
 
 
 # ==========================================================
-# TEST 7 : Strategy Classification
+# TEST 8 : Strategy Classification
 # ==========================================================
 def test_strategy():
     questions = [
@@ -225,9 +226,24 @@ def test_strategy():
 
 
 # ==========================================================
+# TEST 9 : Resume Assistant Retrieval
+# ==========================================================
+assistant = ResumeAssistant(
+    embedding_model=embedding_model,
+    reranker=reranker,
+    index=index,
+    chunks=chunks,
+    parent_documents=parent_documents,
+    conversation_memory=conversation_memory,
+)
+result = assistant._retrieve("Which projects used Python?")
+assistant.debug(result)
+
+
+# ==========================================================
 # TEST MODE
 # ==========================================================
-TEST_MODE = "strategy"  # Options: retrieval, metadata, reranker, memory, rewrite, parent, compression, strategy, all
+TEST_MODE = None  # Options: retrieval, metadata, reranker, memory, rewrite, parent, compression, strategy, all
 
 if TEST_MODE == "retrieval":
     test_hybrid_retrieval()
