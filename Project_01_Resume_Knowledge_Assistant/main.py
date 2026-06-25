@@ -25,6 +25,11 @@ from src.memory.conversation_memory import (
     save_to_memory,
     print_memory_stats,
 )
+from src.retrieval.parent_retriever import (
+    get_parent_ids,
+    build_parent_context,
+    print_parent_summary,
+)
 
 # ==========================================================
 # STEP 1 : Load Documents
@@ -162,9 +167,27 @@ def test_query_rewriting():
 
 
 # ==========================================================
+# TEST 6 : Parent Retrieval
+# ==========================================================
+def test_parent_retrieval():
+    question = "Which projects used Python?"
+    retrieved = hybrid_search(question, embedding_model, index, chunks)
+    ranked = rerank_results(question, retrieved, chunks, reranker)
+    top_chunks = get_top_reranked(ranked, top_n=3)
+    parent_ids = get_parent_ids(top_chunks, chunks)
+    print_parent_summary(parent_ids, parent_documents)
+    context = build_parent_context(parent_ids, parent_documents)
+    print()
+    print("=" * 80)
+    print("PARENT CONTEXT")
+    print("=" * 80)
+    print(context[:1500])
+
+
+# ==========================================================
 # TEST MODE
 # ==========================================================
-TEST_MODE = "rewrite"
+TEST_MODE = "parent"
 
 if TEST_MODE == "retrieval":
     test_hybrid_retrieval()
@@ -176,12 +199,15 @@ elif TEST_MODE == "memory":
     test_memory()
 elif TEST_MODE == "rewrite":
     test_query_rewriting()
+elif TEST_MODE == "parent":
+    test_parent_retrieval()
 elif TEST_MODE == "all":
     test_hybrid_retrieval()
     test_metadata_filter()
     test_reranking()
     test_memory()
     test_query_rewriting()
+    test_parent_retrieval()
 
 if __name__ == "__main__":
     pass
