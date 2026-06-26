@@ -14,13 +14,13 @@ def main():
     for question in questions:
         print()
         print("=" * 100)
-        print(f"QUESTION : {question}")
+        print(f"✓ QUESTION : {question}")
         print("=" * 100)
 
         answer = assistant.ask(question)
 
         print()
-        print("ANSWER")
+        print("✓ ANSWER")
         print("-" * 80)
         print(answer)
 

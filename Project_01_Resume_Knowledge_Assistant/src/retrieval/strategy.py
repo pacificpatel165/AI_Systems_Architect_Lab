@@ -45,7 +45,6 @@ def classify_question(question):
 # Retrieval Strategy
 # ==========================================================
 def get_retrieval_strategy(query_type):
-
     if query_type == FOLLOWUP_QUERY:
         return {"rewrite": True, "metadata": False, "parent": True, "compression": True}
     if query_type == DOCUMENT_QUERY:

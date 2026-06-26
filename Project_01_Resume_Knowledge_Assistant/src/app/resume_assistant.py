@@ -107,33 +107,63 @@ class ResumeAssistant:
         # ------------------------------------------
         if strategy["parent"]:
             parent_ids = get_parent_ids(top_indices, self.chunks)
-            context = build_parent_context(parent_ids, self.parent_documents)
+            original_context = build_parent_context(parent_ids, self.parent_documents)
         else:
             parent_ids = []
-            context = ""
+            original_context = ""
             for idx in top_indices:
-                context += self.chunks[idx]["text"] + "\n\n"
+                original_context += self.chunks[idx]["text"] + "\n\n"
 
         # ------------------------------------------
         # Context Compression
         # ------------------------------------------
         if strategy["compression"]:
-            context = compress_context(question, context, self.embedding_model)
+            compressed_context = compress_context(
+                question, original_context, self.embedding_model
+            )
 
         # ------------------------------------------
         # Return Everything
         # ------------------------------------------
-        return {
+        retrieval_result = {
+            # ---------------------------------------
+            # Query
+            # ---------------------------------------
+            "question": question,
+            "rewritten_query": rewritten_query,
             "query_type": query_type,
             "strategy": strategy,
-            "rewritten_query": rewritten_query,
+            # ---------------------------------------
+            # Metadata
+            # ---------------------------------------
+            "document_filter": document_filter,
+            # ---------------------------------------
+            # Retrieval
+            # ---------------------------------------
             "retrieved_indices": retrieved_indices,
             "ranked_results": ranked_results,
             "top_indices": top_indices,
             "parent_ids": parent_ids,
-            "context": context,
-            "document_filter": document_filter,
+            # ---------------------------------------
+            # Context
+            # ---------------------------------------
+            "original_context": original_context,
+            "compressed_context": compressed_context,
+            # ---------------------------------------
+            # Statistics
+            # ---------------------------------------
+            "original_length": len(original_context),
+            "compressed_length": len(compressed_context),
+            "compression_ratio": (
+                100 * (1 - len(compressed_context) / max(len(original_context), 1))
+            ),
+            # ---------------------------------------
+            # Memory
+            # ---------------------------------------
+            "memory_size": len(self.conversation_memory),
         }
+        return retrieval_result
+        
 
     # ==========================================================
     # Build Prompt
@@ -144,10 +174,10 @@ class ResumeAssistant:
         )
         prompt = PROMPT_TEMPLATE.format(
             memory=memory_context,
-            context=retrieval_result["context"],
+            context=retrieval_result["original_context"],
             question=question,
         )
-        return prompt        
+        return prompt
 
     # ==========================================================
     # Generate Answer
@@ -171,47 +201,66 @@ class ResumeAssistant:
         )
 
     # ==========================================================
-    # Debug Retrieval Result
+    # Debug Dashboard
     # ==========================================================
-    def debug(self, result):
+    def _debug(self, retrieval_result, answer):
         print()
         print("=" * 100)
-        print("RESUME ASSISTANT - RETRIEVAL RESULT")
+        print("                                   RESUME ASSISTANT DEBUG")
         print("=" * 100)
 
-        print("\nQUESTION TYPE")
+        print("\n✓ QUESTION")
         print("-" * 80)
-        print(result["query_type"])
+        print(retrieval_result["question"])
 
-        print("\nRETRIEVAL STRATEGY")
+        print("\n✓ QUERY TYPE")
         print("-" * 80)
-        for key, value in result["strategy"].items():
-            print(f"{key:<20}: {value}")
+        print(retrieval_result["query_type"])
 
-        print("\nREWRITTEN QUERY")
+        print("\n✓ RETRIEVAL STRATEGY")
         print("-" * 80)
-        print(result["rewritten_query"])
+        print(retrieval_result["strategy"])
 
-        print("\nDOCUMENT FILTER")
+        print("\n✓ REWRITTEN QUERY")
         print("-" * 80)
-        print(result["document_filter"])
+        print(retrieval_result["rewritten_query"])
 
-        print("\nRETRIEVED CHUNKS")
+        print("\n✓ DOCUMENT FILTER")
         print("-" * 80)
-        print(result["retrieved_indices"])
+        print(retrieval_result["document_filter"])
 
-        print("\nTOP CHUNKS")
+        print("\n✓ HYBRID SEARCH")
         print("-" * 80)
-        print(result["top_indices"])
+        print(f"Retrieved Chunks : " f"{len(retrieval_result['retrieved_indices'])}")
 
-        print("\nPARENT IDS")
+        print("\n✓ RERANKER")
         print("-" * 80)
-        print(result["parent_ids"])
+        for rank, (idx, score) in enumerate(
+            retrieval_result["ranked_results"], start=1
+        ):
+            print(f"Rank {rank:<2}" f"Chunk {idx:<4}" f"Score {score:.4f}")
 
-        print("\nCONTEXT")
+        print("\n✓ PARENT DOCUMENTS")
         print("-" * 80)
-        print(result["context"][:1000])
+        print(retrieval_result["parent_ids"])
 
+        print("\n✓ CONTEXT COMPRESSION")
+        print("-" * 80)
+        print(f"Original Length    : " f"{retrieval_result['original_length']}")
+        print(f"Compressed Length  : " f"{retrieval_result['compressed_length']}")
+        print(f"Compression Ratio  : " f"{retrieval_result['compression_ratio']:.2f}%")
+
+        print("\n✓ CONTEXT PREVIEW")
+        print("-" * 80)
+        print(retrieval_result["compressed_context"][:1000])
+
+        print("\n✓ CONVERSATION MEMORY")
+        print("-" * 80)
+        print(f"Conversation Turns : " f"{retrieval_result['memory_size']}")
+
+        print("\n✓ FINAL ANSWER")
+        print("-" * 80)
+        print(answer)
         print("=" * 100)
 
     # ==========================================================
@@ -236,5 +285,7 @@ class ResumeAssistant:
         # --------------------------------------
         # Memory
         # --------------------------------------
+        if DEBUG_MODE:
+            self._debug(retrieval_result, answer)
         self._update_memory(question, answer, retrieval_result)
         return answer
