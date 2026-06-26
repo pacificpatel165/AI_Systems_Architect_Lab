@@ -50,6 +50,7 @@ def parse_arguments():
             "retrieval, metadata, followup, parent, compression, negative, all"
         ),
     )
+    return parser.parse_args()
 
 
 # ==========================================================
