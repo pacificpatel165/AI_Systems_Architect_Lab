@@ -7,6 +7,9 @@ from src.embeddings.vector_store import (
     load_embedding_model,
     create_embeddings,
     build_faiss_index,
+    load_vector_store,
+    save_vector_store,
+    vector_store_exists,
 )
 from src.retrieval.reranker import (
     load_reranker_model,
@@ -45,15 +48,35 @@ def initialize_system():
     llm_model = load_llm()
 
     # ------------------------------------------------------
-    # Embeddings
-    # ------------------------------------------------------
-    embeddings = create_embeddings(chunks, embedding_model)
-
-    # ------------------------------------------------------
     # Vector Store
     # ------------------------------------------------------
-    index = build_faiss_index(embeddings)
-    print("\nSystem Initialized Successfully")
+    import traceback
+    try:
+        if vector_store_exists():
+            print("Loading Existing Vector Store...")
+            index, chunks = load_vector_store()
+        else:
+            raise FileNotFoundError
+    except Exception as e:
+        print()
+        print("Existing Vector Store Invalid")
+        print(e)
+        print()
+        print("Creating New Vector Store...")
+        embeddings = create_embeddings(chunks, embedding_model)
+        index = build_faiss_index(embeddings)
+        save_vector_store(index, chunks)
+        print("=" * 80)
+        print("VECTOR STORE CREATED")
+        print("=" * 80)
+
+        print(f"Status          : Building New Index")
+        print(f"Pages           : {len(all_pages_data)}")
+        print(f"Chunks          : {len(chunks)}")
+        print(f"Embedding Model : {EMBEDDING_MODEL_NAME}")
+        print(f"Saving Cache...")
+        print(f"✓ Index File     : {FAISS_INDEX_FILE}")
+        print(f"✓ Metadata File  : {FAISS_METADATA_FILE}")
 
     # ------------------------------------------------------
     # Create Assistant
@@ -82,8 +105,9 @@ def initialize_system():
         print(f"Chunks Created   : {len(chunks)}")
         print(f"Vectors Stored   : {index.ntotal}")
 
-    return assistant, {
-        "pages": len(all_pages_data),
-        "chunks": len(chunks),
-        "vectors": index.ntotal,
+    stats = {
+        "pages_loaded": len(all_pages_data),
+        "chunks_created": len(chunks),
+        "vectors_stored": index.ntotal,
     }
+    return assistant, stats
