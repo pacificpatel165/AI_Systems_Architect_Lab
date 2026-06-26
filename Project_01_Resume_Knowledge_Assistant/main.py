@@ -1,11 +1,12 @@
+import argparse
 from src.bootstrap import initialize_system
+from tests.test_runner import run_tests
 
 
 # ==========================================================
-# Main
+# Normal Application
 # ==========================================================
-def main():
-    assistant, stats = initialize_system()
+def run_application(assistant):
     questions = [
         "Which projects used Python?",
         "Which company was that for?",
@@ -17,12 +18,58 @@ def main():
         print(f"✓ QUESTION : {question}")
         print("=" * 100)
 
-        answer = assistant.ask(question)
-
+        response = assistant.ask(question)
         print()
         print("✓ ANSWER")
         print("-" * 80)
-        print(answer)
+        print(response["answer"])
+
+
+# ==========================================================
+# Parse Command Line Arguments
+# ==========================================================
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        description="Resume Knowledge Assistant",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "--test",
+        metavar="CATEGORY",
+        choices=[
+            "retrieval",
+            "metadata",
+            "followup",
+            "parent",
+            "compression",
+            "negative",
+            "all",
+        ],
+        help=(
+            "Run pipeline validation tests. Examples:\n"
+            "retrieval, metadata, followup, parent, compression, negative, all"
+        ),
+    )
+
+
+# ==========================================================
+# Main
+# ==========================================================
+def main():
+    args = parse_arguments()
+    assistant, stats = initialize_system()
+
+    # -----------------------------------------
+    # Test Mode
+    # -----------------------------------------
+    if args.test:
+        run_tests(assistant, args.test)
+
+    # -----------------------------------------
+    # Normal Mode
+    # -----------------------------------------
+    else:
+        run_application(assistant)
 
 
 # ==========================================================

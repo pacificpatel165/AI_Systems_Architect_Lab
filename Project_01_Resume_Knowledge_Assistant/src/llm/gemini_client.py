@@ -25,4 +25,4 @@ def generate_response(llm_model, prompt, retries=3):
             print(f"Retry {attempt+1}")
             print(e)
             time.sleep(5)
-    return "LLM unavailable."
+    return {"success": False, "answer": "LLM unavailable.", "error": str(e)}

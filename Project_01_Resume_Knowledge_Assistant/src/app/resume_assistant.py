@@ -23,6 +23,7 @@ from src.retrieval.parent_retriever import (
 from src.retrieval.compressor import compress_context
 from src.memory.conversation_memory import build_memory_context, save_to_memory
 from src.prompts.prompts import PROMPT_TEMPLATE
+import time
 
 
 # ==========================================================
@@ -117,11 +118,25 @@ class ResumeAssistant:
         # ------------------------------------------
         # Context Compression
         # ------------------------------------------
+        compressed_context = original_context
         if strategy["compression"]:
             compressed_context = compress_context(
                 question, original_context, self.embedding_model
             )
 
+        # ------------------------------------------
+        # Retrieve Sources for Citation
+        # ------------------------------------------
+        sources = []
+        for idx in top_indices:
+            chunk = self.chunks[idx]
+            sources.append(
+                {
+                    "source_file": chunk["source_file"],
+                    "page": chunk["page_number"],
+                    "document_type": chunk["document_type"],
+                }
+            )
         # ------------------------------------------
         # Return Everything
         # ------------------------------------------
@@ -144,6 +159,7 @@ class ResumeAssistant:
             "ranked_results": ranked_results,
             "top_indices": top_indices,
             "parent_ids": parent_ids,
+            "sources": sources,
             # ---------------------------------------
             # Context
             # ---------------------------------------
@@ -163,7 +179,6 @@ class ResumeAssistant:
             "memory_size": len(self.conversation_memory),
         }
         return retrieval_result
-        
 
     # ==========================================================
     # Build Prompt
@@ -174,7 +189,7 @@ class ResumeAssistant:
         )
         prompt = PROMPT_TEMPLATE.format(
             memory=memory_context,
-            context=retrieval_result["original_context"],
+            context=retrieval_result["compressed_context"],
             question=question,
         )
         return prompt
@@ -185,7 +200,10 @@ class ResumeAssistant:
     def _generate_answer(self, prompt):
         if not USE_LLM:
             return "LLM Disabled."
-        answer = generate_response(self.llm_model, prompt)
+        try:
+            answer = generate_response(self.llm_model, prompt)
+        except Exception as e:
+            answer = f"LLM Error: {e}"
         return answer
 
     # ==========================================================
@@ -267,6 +285,7 @@ class ResumeAssistant:
     # Ask Assistant
     # ==========================================================
     def ask(self, question):
+        start_time = time.perf_counter()
         # --------------------------------------
         # Retrieval
         # --------------------------------------
@@ -288,4 +307,12 @@ class ResumeAssistant:
         if DEBUG_MODE:
             self._debug(retrieval_result, answer)
         self._update_memory(question, answer, retrieval_result)
-        return answer
+        latency = time.perf_counter() - start_time
+        return {
+            "question": question,
+            "answer": answer,
+            "sources": retrieval_result["sources"],
+            "debug": retrieval_result,
+            "latency": latency,
+            "success": True,
+        }
