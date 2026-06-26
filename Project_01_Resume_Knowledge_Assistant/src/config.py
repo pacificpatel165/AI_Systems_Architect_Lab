@@ -21,7 +21,7 @@ MEMORY_DIR = (DATA_DIR/"memory")
 # ----------------------------------------------------------
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 LLM_MODEL_NAME = "gemini-2.5-flash"
-USE_LLM = True
+USE_LLM = False
 
 # ----------------------------------------------------------
 # RAG Settings

@@ -39,7 +39,6 @@ from src.retrieval.strategy import (
 from src.app.resume_assistant import ResumeAssistant
 from src.llm.gemini_client import load_llm
 
-
 # ==========================================================
 # STEP 1 : Load Documents
 # ==========================================================
@@ -238,15 +237,28 @@ def test_strategy():
 # TEST 9 : Resume Assistant Retrieval
 # ==========================================================
 assistant = ResumeAssistant(
-    embedding_model=embedding_model,
-    reranker=reranker,
-    index=index,
-    chunks=chunks,
-    parent_documents=parent_documents,
-    conversation_memory=conversation_memory,
+    embedding_model,
+    reranker,
+    llm_model,
+    index,
+    chunks,
+    parent_documents,
+    conversation_memory,
 )
-result = assistant._retrieve("Which projects used Python?")
-assistant.debug(result)
+
+questions = [
+    "Which projects used Python?",
+    "Which company was that for?",
+    "What technologies were used?",
+]
+
+for question in questions:
+    print()
+    print("=" * 100)
+    print(question)
+    print("=" * 100)
+    answer = assistant.ask(question)
+    print(answer)
 
 
 # ==========================================================

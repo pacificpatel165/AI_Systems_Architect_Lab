@@ -1,3 +1,7 @@
+from src.llm.gemini_client import (
+    generate_response,
+)
+from src.config import *
 from src.rewriting.query_rewriter import rewrite_query
 from src.retrieval.strategy import (
     classify_question,
@@ -17,6 +21,8 @@ from src.retrieval.parent_retriever import (
     build_parent_context,
 )
 from src.retrieval.compressor import compress_context
+from src.memory.conversation_memory import build_memory_context, save_to_memory
+from src.prompts.prompts import PROMPT_TEMPLATE
 
 
 # ==========================================================
@@ -30,6 +36,7 @@ class ResumeAssistant:
         self,
         embedding_model,
         reranker,
+        llm_model,
         index,
         chunks,
         parent_documents,
@@ -38,6 +45,7 @@ class ResumeAssistant:
 
         self.embedding_model = embedding_model
         self.reranker = reranker
+        self.llm_model = llm_model
 
         self.index = index
         self.chunks = chunks
@@ -127,6 +135,40 @@ class ResumeAssistant:
             "document_filter": document_filter,
         }
 
+    # ==========================================================
+    # Build Prompt
+    # ==========================================================
+    def _build_prompt(self, question, retrieval_result):
+        memory_context = build_memory_context(
+            self.conversation_memory, MAX_MEMORY_TURNS
+        )
+        prompt = PROMPT_TEMPLATE.format(
+            memory=memory_context,
+            context=retrieval_result["context"],
+            question=question,
+        )
+        return prompt        
+
+    # ==========================================================
+    # Generate Answer
+    # ==========================================================
+    def _generate_answer(self, prompt):
+        if not USE_LLM:
+            return "LLM Disabled."
+        answer = generate_response(self.llm_model, prompt)
+        return answer
+
+    # ==========================================================
+    # Update Memory
+    # ==========================================================
+    def _update_memory(self, question, answer, retrieval_result):
+        save_to_memory(
+            question=question,
+            answer=answer,
+            top_indices=retrieval_result["top_indices"],
+            chunks=self.chunks,
+            conversation_memory=self.conversation_memory,
+        )
 
     # ==========================================================
     # Debug Retrieval Result
@@ -171,3 +213,28 @@ class ResumeAssistant:
         print(result["context"][:1000])
 
         print("=" * 100)
+
+    # ==========================================================
+    # Ask Assistant
+    # ==========================================================
+    def ask(self, question):
+        # --------------------------------------
+        # Retrieval
+        # --------------------------------------
+        retrieval_result = self._retrieve(question)
+
+        # --------------------------------------
+        # Prompt
+        # --------------------------------------
+        prompt = self._build_prompt(question, retrieval_result)
+
+        # --------------------------------------
+        # LLM
+        # --------------------------------------
+        answer = self._generate_answer(prompt)
+
+        # --------------------------------------
+        # Memory
+        # --------------------------------------
+        self._update_memory(question, answer, retrieval_result)
+        return answer
