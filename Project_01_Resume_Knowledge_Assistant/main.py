@@ -37,6 +37,8 @@ from src.retrieval.strategy import (
     print_strategy,
 )
 from src.app.resume_assistant import ResumeAssistant
+from src.llm.gemini_client import load_llm
+
 
 # ==========================================================
 # STEP 1 : Load Documents
@@ -71,7 +73,14 @@ print("System Initialized")
 
 
 # ==========================================================
-# STEP 6 : Debug Information
+# STEP 6 : Build FAISS Index
+# ==========================================================
+llm_model = load_llm()
+print("LLM Model Loaded")
+
+
+# ==========================================================
+# STEP 7 : Debug Information
 # ==========================================================
 if DEBUG_MODE:
     print()
