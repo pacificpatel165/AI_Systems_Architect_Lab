@@ -72,4 +72,3 @@ if question:
             "latency": response["latency"],
         }
     )
-

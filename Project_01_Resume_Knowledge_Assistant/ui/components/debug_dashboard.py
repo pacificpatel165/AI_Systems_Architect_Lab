@@ -1,4 +1,5 @@
 import streamlit as st
+from ui.components.debug_widgets import status
 
 
 # ==========================================================
@@ -20,7 +21,11 @@ def render_debug_dashboard(debug):
     # Strategy
     # ------------------------------------------------------
     with st.expander("🎯 Strategy"):
-        st.json(debug["strategy"])
+        strategy = debug["strategy"]
+        status(strategy["rewrite"], "Query Rewrite")
+        status(strategy["metadata"], "Metadata Filter")
+        status(strategy["parent"], "Parent Retrieval")
+        status(strategy["compression"], "Context Compression")
 
     # ------------------------------------------------------
     # Metadata
