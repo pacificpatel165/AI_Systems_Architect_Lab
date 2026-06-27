@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=70", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "resume-knowledge-assistant"
+version = "1.0.0"
+description = "AI Resume Knowledge Assistant built using RAG"
+readme = "README.md"
+requires-python = ">=3.11"
+
+authors = [
+    {name = "Prashant Patel"}
+]
+
+dependencies = []
+
+[tool.setuptools]
+packages = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "."
