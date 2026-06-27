@@ -1,24 +1,72 @@
 import streamlit as st
 from src.bootstrap import initialize_system
+from ui.components.chat import render_chat
+from ui.components.sidebar import render_sidebar
+from ui.components.system_status import render_system_status
+from ui.components.sources import render_sources
 
+# ==========================================================
+# Page
+# ==========================================================
 st.set_page_config(
     page_title="Resume Knowledge Assistant",
     page_icon="🤖",
     layout="wide",
 )
-
 st.title("🤖 Resume Knowledge Assistant")
-st.success("Streamlit is working!")
+st.caption("AI-powered Resume Knowledge Assistant")
 
+
+# ==========================================================
+# Initialize
+# ==========================================================
 if "assistant" not in st.session_state:
-    with st.spinner("Initializing AI Assistant..."):
-        assistant, stats = initialize_system()
-        st.session_state.assistant = assistant
-        st.session_state.stats = stats
+    assistant, stats = initialize_system()
+    st.session_state.assistant = assistant
+    st.session_state.stats = stats
 
-st.sidebar.title("System Status")
-stats = st.session_state.stats
-st.sidebar.success("System Ready")
-st.sidebar.write(f"Pages Loaded : {stats['pages_loaded']}")
-st.sidebar.write(f"Chunks : {stats['chunks_created']}")
-st.sidebar.write(f"Vectors : {stats['vectors_stored']}")
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+
+# ==========================================================
+# Sidebar
+# ==========================================================
+render_system_status(st.session_state.stats)
+selected_question = render_sidebar()
+
+
+# ==========================================================
+# Chat
+# ==========================================================
+render_chat()
+custom_question = st.chat_input("Ask anything about your resume...")
+question = custom_question or selected_question
+
+
+# ==========================================================
+# Ask Assistant
+# ==========================================================
+if question:
+    with st.chat_message("user"):
+        st.markdown(question)
+    st.session_state.messages.append(
+        {
+            "role": "user",
+            "content": question,
+        }
+    )
+    response = st.session_state.assistant.ask(question)
+    with st.chat_message("assistant"):
+        st.markdown(response["answer"])
+        render_sources(response["sources"])
+
+    st.session_state.messages.append(
+        {
+            "role": "assistant",
+            "content": response["answer"],
+            "sources": response["sources"],
+            "debug": response["debug"],
+            "latency": response["latency"],
+        }
+    )
