@@ -4,6 +4,7 @@ from ui.components.chat import render_chat
 from ui.components.sidebar import render_sidebar
 from ui.components.system_status import render_system_status
 from ui.components.sources import render_sources
+from ui.components.debug_dashboard import render_debug_dashboard
 
 # ==========================================================
 # Page
@@ -57,6 +58,7 @@ if question:
         }
     )
     response = st.session_state.assistant.ask(question)
+    st.session_state.debug = response["debug"]
     with st.chat_message("assistant"):
         st.markdown(response["answer"])
         render_sources(response["sources"])
@@ -70,3 +72,4 @@ if question:
             "latency": response["latency"],
         }
     )
+

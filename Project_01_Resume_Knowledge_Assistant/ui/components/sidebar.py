@@ -25,6 +25,8 @@ def render_sidebar():
         use_container_width=True,
     ):
         st.session_state.messages = []
+        if "debug" in st.session_state:
+            del st.session_state.debug
         st.rerun()
 
     return selected_question
