@@ -1,8 +1,8 @@
-pypdf==6.1.1
-sentence-transformers==5.1.0
-transformers==4.56.2
-faiss-cpu==1.12.0
-google-generativeai==0.8.5
-python-dotenv==1.1.1
-numpy==2.3.2
-streamlit==1.48.1
+pypdf
+sentence-transformers
+transformers
+faiss-cpu
+google-generativeai
+python-dotenv
+numpy
+streamlit
