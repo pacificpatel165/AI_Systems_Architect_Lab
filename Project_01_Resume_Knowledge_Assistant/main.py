@@ -58,7 +58,8 @@ def parse_arguments():
 # ==========================================================
 def main():
     args = parse_arguments()
-    assistant, stats = initialize_system()
+    system = initialize_system()
+    assistant = system.assistant
 
     # -----------------------------------------
     # Test Mode

@@ -1,8 +1,5 @@
 from src.config import *
-from src.loaders.document_loader import (
-    load_documents,
-    chunk_text_with_metadata,
-)
+from src.loaders.document_loader import load_documents, chunk_text_with_metadata
 from src.embeddings.vector_store import (
     load_embedding_model,
     create_embeddings,
@@ -11,18 +8,11 @@ from src.embeddings.vector_store import (
     save_vector_store,
     vector_store_exists,
 )
-from src.retrieval.reranker import (
-    load_reranker_model,
-)
-from src.llm.gemini_client import (
-    load_llm,
-)
-from src.memory.conversation_memory import (
-    conversation_memory,
-)
-from src.app.resume_assistant import (
-    ResumeAssistant,
-)
+from src.retrieval.reranker import load_reranker_model
+from src.llm.gemini_client import load_llm
+from src.memory.conversation_memory import conversation_memory
+from src.app.resume_assistant import ResumeAssistant
+from src.models.system import SystemState
 
 
 # ==========================================================
@@ -50,7 +40,6 @@ def initialize_system():
     # ------------------------------------------------------
     # Vector Store
     # ------------------------------------------------------
-    import traceback
     try:
         if vector_store_exists():
             print("Loading Existing Vector Store...")
@@ -110,4 +99,14 @@ def initialize_system():
         "chunks_created": len(chunks),
         "vectors_stored": index.ntotal,
     }
-    return assistant, stats
+    system = SystemState(
+        assistant=assistant,
+        stats=stats,
+        chunks=chunks,
+        parent_documents=parent_documents,
+        index=index,
+        embedding_model=embedding_model,
+        reranker=reranker,
+        llm_model=llm_model,
+    )
+    return system

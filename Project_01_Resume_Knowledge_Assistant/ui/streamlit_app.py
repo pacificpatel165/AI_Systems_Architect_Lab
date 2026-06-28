@@ -5,6 +5,7 @@ from ui.components.sidebar import render_sidebar
 from ui.components.system_status import render_system_status
 from ui.components.sources import render_sources
 from ui.components.debug_dashboard import render_debug_dashboard
+from ui.app_state import get_system
 
 # ==========================================================
 # Page
@@ -22,10 +23,9 @@ st.caption("AI-powered Resume Knowledge Assistant")
 # Initialize
 # ==========================================================
 if "assistant" not in st.session_state:
-    assistant, stats = initialize_system()
-    st.session_state.assistant = assistant
-    st.session_state.stats = stats
-
+    system = get_system()
+    st.session_state.system = system
+    
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -33,7 +33,7 @@ if "messages" not in st.session_state:
 # ==========================================================
 # Sidebar
 # ==========================================================
-render_system_status(st.session_state.stats)
+render_system_status(st.session_state.system.stats)
 selected_question = render_sidebar()
 
 
@@ -57,7 +57,7 @@ if question:
             "content": question,
         }
     )
-    response = st.session_state.assistant.ask(question)
+    response = st.session_state.system.assistant.ask(question)
     st.session_state.debug = response.debug
     with st.chat_message("assistant"):
         st.markdown(response.answer)
