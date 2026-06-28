@@ -103,6 +103,25 @@ class ResumeAssistant:
         )
         top_indices = get_top_reranked(ranked_results, top_n=3)
 
+        # Collect the enrich data of retriever  
+        retrieval_details = []
+
+        for rank, (idx, rerank_score) in enumerate(
+                ranked_results,
+                start=1):
+            chunk = self.chunks[idx]
+            retrieval_details.append(
+                {
+                    "rank": rank,
+                    "chunk_id": idx,
+                    "rerank_score": float(rerank_score),
+                    "source_file": chunk["source_file"],
+                    "page_number": chunk["page_number"],
+                    "document_type": chunk["document_type"],
+                    "text": chunk["text"][:500],
+                }
+            )
+        
         # ------------------------------------------
         # Parent Retrieval
         # ------------------------------------------
@@ -160,6 +179,7 @@ class ResumeAssistant:
             "top_indices": top_indices,
             "parent_ids": parent_ids,
             "sources": sources,
+            "retrieval_details": retrieval_details,
             # ---------------------------------------
             # Context
             # ---------------------------------------

@@ -1,5 +1,6 @@
 import streamlit as st
 from ui.components.debug_dashboard import render_debug_dashboard
+from ui.components.retrieval_inspector import render_retrieval_inspector
 
 # ==========================================================
 # Page Configuration
@@ -23,3 +24,6 @@ if "debug" not in st.session_state:
 # Render Dashboard
 # ==========================================================
 render_debug_dashboard(st.session_state.debug)
+st.divider()
+render_retrieval_inspector(st.session_state.debug)
+
