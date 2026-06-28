@@ -24,6 +24,17 @@ from src.retrieval.compressor import compress_context
 from src.memory.conversation_memory import build_memory_context, save_to_memory
 from src.prompts.prompts import PROMPT_TEMPLATE
 import time
+from src.models import (
+    PipelineDebug,
+    StrategyInfo,
+    QueryInfo,
+    RetrievalInfo,
+    ContextInfo,
+    MemoryInfo,
+    PerformanceInfo,
+    RetrievalResult,
+)
+from src.models import AssistantResponse
 
 
 # ==========================================================
@@ -103,12 +114,10 @@ class ResumeAssistant:
         )
         top_indices = get_top_reranked(ranked_results, top_n=3)
 
-        # Collect the enrich data of retriever  
+        # Collect the enrich data of retriever
         retrieval_details = []
 
-        for rank, (idx, rerank_score) in enumerate(
-                ranked_results,
-                start=1):
+        for rank, (idx, rerank_score) in enumerate(ranked_results, start=1):
             chunk = self.chunks[idx]
             retrieval_details.append(
                 {
@@ -121,7 +130,7 @@ class ResumeAssistant:
                     "text": chunk["text"][:500],
                 }
             )
-        
+
         # ------------------------------------------
         # Parent Retrieval
         # ------------------------------------------
@@ -159,59 +168,68 @@ class ResumeAssistant:
         # ------------------------------------------
         # Return Everything
         # ------------------------------------------
-        retrieval_result = {
-            # ---------------------------------------
-            # Query
-            # ---------------------------------------
-            "question": question,
-            "rewritten_query": rewritten_query,
-            "query_type": query_type,
-            "strategy": strategy,
-            # ---------------------------------------
-            # Metadata
-            # ---------------------------------------
-            "document_filter": document_filter,
-            # ---------------------------------------
-            # Retrieval
-            # ---------------------------------------
-            "retrieved_indices": retrieved_indices,
-            "ranked_results": ranked_results,
-            "top_indices": top_indices,
-            "parent_ids": parent_ids,
-            "sources": sources,
-            "retrieval_details": retrieval_details,
-            # ---------------------------------------
-            # Context
-            # ---------------------------------------
-            "original_context": original_context,
-            "compressed_context": compressed_context,
-            # ---------------------------------------
-            # Statistics
-            # ---------------------------------------
-            "original_length": len(original_context),
-            "compressed_length": len(compressed_context),
-            "compression_ratio": (
-                100 * (1 - len(compressed_context) / max(len(original_context), 1))
-            ),
-            # ---------------------------------------
-            # Memory
-            # ---------------------------------------
-            "memory_size": len(self.conversation_memory),
-        }
-        return retrieval_result
+        strategy_info = StrategyInfo(
+            rewrite=strategy["rewrite"],
+            metadata=strategy["metadata"],
+            parent=strategy["parent"],
+            compression=strategy["compression"]
+        )
+        query = QueryInfo(
+            question=question,
+            rewritten_query=rewritten_query,
+            query_type=query_type,
+            strategy=strategy_info,
+            document_filter=document_filter,
+        )
+
+        retrieval = RetrievalInfo(
+            retrieved_indices=retrieved_indices,
+            ranked_results=ranked_results,
+            top_indices=top_indices,
+            parent_ids=parent_ids,
+            sources=sources,
+            details=retrieval_details,
+        )
+
+        context = ContextInfo(
+            original=original_context,
+            compressed=compressed_context,
+            original_length=len(original_context),
+            compressed_length=len(compressed_context),
+            compression_ratio=100
+            * (1 - len(compressed_context) / max(len(original_context), 1)),
+        )
+
+        memory = MemoryInfo(turns=len(self.conversation_memory))
+
+        performance = PerformanceInfo(
+            retrieved_chunks=len(retrieved_indices), returned_chunks=len(top_indices)
+        )
+
+        debug = PipelineDebug(
+            query=query,
+            retrieval=retrieval,
+            context=context,
+            memory=memory,
+            performance=performance,
+        )
+
+        return RetrievalResult(debug=debug)
 
     # ==========================================================
     # Build Prompt
     # ==========================================================
     def _build_prompt(self, question, retrieval_result):
         memory_context = build_memory_context(
-            self.conversation_memory, MAX_MEMORY_TURNS
+            self.conversation_memory,
+            MAX_MEMORY_TURNS,
         )
         prompt = PROMPT_TEMPLATE.format(
             memory=memory_context,
-            context=retrieval_result["compressed_context"],
+            context=retrieval_result.debug.context.compressed,
             question=question,
         )
+
         return prompt
 
     # ==========================================================
@@ -233,7 +251,7 @@ class ResumeAssistant:
         save_to_memory(
             question=question,
             answer=answer,
-            top_indices=retrieval_result["top_indices"],
+            top_indices=retrieval_result.debug.retrieval.top_indices,
             chunks=self.chunks,
             conversation_memory=self.conversation_memory,
         )
@@ -242,63 +260,75 @@ class ResumeAssistant:
     # Debug Dashboard
     # ==========================================================
     def _debug(self, retrieval_result, answer):
+        debug = retrieval_result.debug
         print()
         print("=" * 100)
-        print("                                   RESUME ASSISTANT DEBUG")
+        print("                                     RESUME ASSISTANT DEBUG")
         print("=" * 100)
 
         print("\n✓ QUESTION")
         print("-" * 80)
-        print(retrieval_result["question"])
+        print(debug.query.question)
 
         print("\n✓ QUERY TYPE")
         print("-" * 80)
-        print(retrieval_result["query_type"])
+        print(debug.query.query_type)
 
         print("\n✓ RETRIEVAL STRATEGY")
         print("-" * 80)
-        print(retrieval_result["strategy"])
+        print(debug.query.strategy)
 
         print("\n✓ REWRITTEN QUERY")
         print("-" * 80)
-        print(retrieval_result["rewritten_query"])
+        print(debug.query.rewritten_query)
 
         print("\n✓ DOCUMENT FILTER")
         print("-" * 80)
-        print(retrieval_result["document_filter"])
+        print(debug.query.document_filter)
 
         print("\n✓ HYBRID SEARCH")
         print("-" * 80)
-        print(f"Retrieved Chunks : " f"{len(retrieval_result['retrieved_indices'])}")
+        print(f"Retrieved Chunks : " f"{len(debug.retrieval.retrieved_indices)}")
 
         print("\n✓ RERANKER")
         print("-" * 80)
+
         for rank, (idx, score) in enumerate(
-            retrieval_result["ranked_results"], start=1
+            debug.retrieval.ranked_results,
+            start=1,
         ):
-            print(f"Rank {rank:<2}" f"Chunk {idx:<4}" f"Score {score:.4f}")
+            print(f"Rank {rank:<2} " f"Chunk {idx:<4} " f"Score {score:.4f}")
 
         print("\n✓ PARENT DOCUMENTS")
         print("-" * 80)
-        print(retrieval_result["parent_ids"])
+        print(debug.retrieval.parent_ids)
 
         print("\n✓ CONTEXT COMPRESSION")
         print("-" * 80)
-        print(f"Original Length    : " f"{retrieval_result['original_length']}")
-        print(f"Compressed Length  : " f"{retrieval_result['compressed_length']}")
-        print(f"Compression Ratio  : " f"{retrieval_result['compression_ratio']:.2f}%")
+        print(f"Original Length   : " f"{debug.context.original_length}")
+
+        print(f"Compressed Length : " f"{debug.context.compressed_length}")
+
+        print(f"Compression Ratio : " f"{debug.context.compression_ratio:.2f}%")
 
         print("\n✓ CONTEXT PREVIEW")
         print("-" * 80)
-        print(retrieval_result["compressed_context"][:1000])
+        print(debug.context.compressed[:1000])
 
-        print("\n✓ CONVERSATION MEMORY")
+        print("\n✓ MEMORY")
         print("-" * 80)
-        print(f"Conversation Turns : " f"{retrieval_result['memory_size']}")
+        print(f"Conversation Turns : " f"{debug.memory.turns}")
+
+        print("\n✓ PERFORMANCE")
+        print("-" * 80)
+        print(f"Retrieved Chunks : " f"{debug.performance.retrieved_chunks}")
+
+        print(f"Returned Chunks : " f"{debug.performance.returned_chunks}")
 
         print("\n✓ FINAL ANSWER")
         print("-" * 80)
         print(answer)
+
         print("=" * 100)
 
     # ==========================================================
@@ -328,11 +358,11 @@ class ResumeAssistant:
             self._debug(retrieval_result, answer)
         self._update_memory(question, answer, retrieval_result)
         latency = time.perf_counter() - start_time
-        return {
-            "question": question,
-            "answer": answer,
-            "sources": retrieval_result["sources"],
-            "debug": retrieval_result,
-            "latency": latency,
-            "success": True,
-        }
+        return AssistantResponse(
+            question=question,
+            answer=answer,
+            sources=retrieval_result.debug.retrieval.sources,
+            latency=latency,
+            success=True,
+            debug=retrieval_result.debug,
+        )

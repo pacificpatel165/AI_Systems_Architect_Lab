@@ -58,17 +58,17 @@ if question:
         }
     )
     response = st.session_state.assistant.ask(question)
-    st.session_state.debug = response["debug"]
+    st.session_state.debug = response.debug
     with st.chat_message("assistant"):
-        st.markdown(response["answer"])
-        render_sources(response["sources"])
+        st.markdown(response.answer)
+        render_sources(response.sources)
 
     st.session_state.messages.append(
         {
             "role": "assistant",
-            "content": response["answer"],
-            "sources": response["sources"],
-            "debug": response["debug"],
-            "latency": response["latency"],
+            "content": response.answer,
+            "sources": response.sources,
+            "debug": response.debug,
+            "latency": response.latency,
         }
     )

@@ -22,7 +22,7 @@ def run_application(assistant):
         print()
         print("✓ ANSWER")
         print("-" * 80)
-        print(response["answer"])
+        print(response.answer)
 
 
 # ==========================================================

@@ -11,7 +11,7 @@ import streamlit as st
 # ==========================================================
 def render_retrieval_inspector(debug):
     st.header("🔍 Retrieval Inspector")
-    retrieval = debug["retrieval_details"]
+    retrieval = debug.retrieval.details
     medals = {1: "🥇", 2: "🥈", 3: "🥉"}
 
     for chunk in retrieval:
