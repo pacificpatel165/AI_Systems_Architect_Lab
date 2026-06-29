@@ -1,32 +1,37 @@
 import streamlit as st
-from ui.quick_questions import QUICK_QUESTIONS
-
+from src.version import __version__
 
 # ==========================================================
 # Sidebar
 # ==========================================================
-def render_sidebar():
-    st.sidebar.header("🚀 Try a Question")
-    selected_question = None
-    for category, questions in QUICK_QUESTIONS.items():
-        with st.sidebar.expander(category):
-            for question in questions:
-                if st.button(
-                    question,
-                    key=f"{category}_{question}",
-                    use_container_width=True,
-                ):
-                    selected_question = question
-
+def render_sidebar(system):
+    stats = system.stats
+    st.sidebar.title("🤖 Resume AI")
+    st.sidebar.success("🟢 System Ready")
+    st.sidebar.divider()
+    # ------------------------------------------------------
+    # Statistics
+    # ------------------------------------------------------
+    st.sidebar.subheader("📊 Statistics")
+    st.sidebar.metric("Pages Loaded", stats["pages_loaded"])
+    st.sidebar.metric("Chunks", stats["chunks_created"])
+    st.sidebar.metric("Vectors", stats["vectors_stored"])
+    st.sidebar.metric("Conversation", len(system.assistant.conversation_memory))
     st.sidebar.divider()
 
-    if st.sidebar.button(
-        "🗑 Clear Conversation",
-        use_container_width=True,
-    ):
-        st.session_state.messages = []
-        if "debug" in st.session_state:
-            del st.session_state.debug
-        st.rerun()
+    # ------------------------------------------------------
+    # Models
+    # ------------------------------------------------------
+    st.sidebar.subheader("🧠 Models")
+    st.sidebar.write("**Embedding**")
+    st.sidebar.caption("all-MiniLM-L6-v2")
+    st.sidebar.write("**Reranker**")
+    st.sidebar.caption("cross-encoder")
+    st.sidebar.write("**LLM**")
+    st.sidebar.caption("Gemini 2.5 Flash")
+    st.sidebar.divider()
 
-    return selected_question
+    # ------------------------------------------------------
+    # Version
+    # ------------------------------------------------------
+    st.sidebar.caption(f"Version {__version__}")

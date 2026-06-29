@@ -13,6 +13,8 @@ from src.llm.gemini_client import load_llm
 from src.memory.conversation_memory import conversation_memory
 from src.app.resume_assistant import ResumeAssistant
 from src.models.system import SystemState
+from src.config import EMBEDDING_MODEL_NAME, RERANKER_MODEL_NAME, LLM_MODEL_NAME
+from src.models.model_info import ModelInfo
 
 
 # ==========================================================
@@ -99,6 +101,11 @@ def initialize_system():
         "chunks_created": len(chunks),
         "vectors_stored": index.ntotal,
     }
+    model_info = ModelInfo(
+        embedding=EMBEDDING_MODEL_NAME,
+        reranker=RERANKER_MODEL_NAME,
+        llm=LLM_MODEL_NAME,
+    )
     system = SystemState(
         assistant=assistant,
         stats=stats,
@@ -108,5 +115,6 @@ def initialize_system():
         embedding_model=embedding_model,
         reranker=reranker,
         llm_model=llm_model,
+        model_info=model_info,
     )
     return system
