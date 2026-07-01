@@ -1,30 +1,24 @@
 import streamlit as st
-from src.bootstrap import initialize_system
-from ui.components.document_browser import render_document_browser
-from ui.components.chunk_viewer import render_chunk_viewer
-from ui.app_state import get_system
+from ui.core.layout import render_layout
+from ui.core.app_state import get_system
+from ui.documents.document_page import render_document_page
 
+# ==========================================================
+# Page Configuration
+# ==========================================================
 st.set_page_config(page_title="Documents", page_icon="📄", layout="wide")
-st.title("📄 Document Explorer")
 
-# ------------------------------------------------------
-# Initialize once
-# ------------------------------------------------------
-if "assistant" not in st.session_state:
-    with st.spinner("Initializing System..."):
-        system = get_system()
-        st.session_state.system = system
+# ==========================================================
+# Initialize
+# ==========================================================
+system = get_system()
 
-# ------------------------------------------------------
-# Retrieve data
-# ------------------------------------------------------
-assistant = st.session_state.system.assistant
-chunks = assistant.chunks
-parent_documents = st.session_state.system.parent_documents
+# ==========================================================
+# Common Layout
+# ==========================================================
+render_layout(system)
 
-# ------------------------------------------------------
-# UI
-# ------------------------------------------------------
-render_document_browser(parent_documents, chunks)
-st.divider()
-render_chunk_viewer(chunks)
+# ==========================================================
+# Documents
+# ==========================================================
+render_document_page()
