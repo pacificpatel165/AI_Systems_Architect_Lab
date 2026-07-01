@@ -6,7 +6,16 @@ from ui.main.question_helper import render_question_helper
 # Chat Toolbar
 # ==========================================================
 def render_chat_toolbar():
-    selected_question = None
+    """
+    Bottom toolbar displayed above the chat input.
+
+    Returns:
+        None
+
+    If a suggested question is selected, it is stored in
+    session_state and the page is rerun to close the popover.
+    """
+
     col1, spacer, col2, col3 = st.columns([4, 6, 1, 1])
 
     # ------------------------------------------------------
@@ -14,6 +23,9 @@ def render_chat_toolbar():
     # ------------------------------------------------------
     with col1:
         selected_question = render_question_helper()
+        if selected_question:
+            st.session_state.selected_question = selected_question
+            st.rerun()
 
     # ------------------------------------------------------
     # Clear Chat
@@ -31,4 +43,3 @@ def render_chat_toolbar():
         st.button(
             "📤", help="Export conversation", disabled=True, use_container_width=True
         )
-    return selected_question
