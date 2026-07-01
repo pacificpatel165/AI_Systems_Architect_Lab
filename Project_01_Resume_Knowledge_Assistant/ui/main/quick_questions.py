@@ -1,7 +1,8 @@
 # ==========================================================
-# Quick Questions
+# Suggested Questions
 # ==========================================================
-QUICK_QUESTIONS = {
+
+SUGGESTED_QUESTIONS = {
     "👤 Resume": [
         "Summarize my resume.",
         "What are my core skills?",
