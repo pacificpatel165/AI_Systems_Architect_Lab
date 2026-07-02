@@ -30,7 +30,7 @@ def initialize_system():
     # Load Documents
     # ------------------------------------------------------
     all_pages_data, parent_documents = load_documents(DOCUMENT_FOLDER)
-    chunks = chunk_text_with_metadata(all_pages_data, CHUNK_SIZE, OVERLAP)
+    chunks = chunk_text_with_metadata(all_pages_data, CHUNK_SIZE, CHUNK_OVERLAP)
 
     # ------------------------------------------------------
     # Models

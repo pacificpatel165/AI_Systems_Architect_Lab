@@ -17,6 +17,13 @@ FAISS_DIR = DATA_DIR / "faiss"
 MEMORY_DIR = DATA_DIR / "memory"
 
 # ----------------------------------------------------------
+# Project Information
+# ----------------------------------------------------------
+PROJECT_NAME = "Resume Knowledge Assistant"
+PROJECT_VERSION = "1.0.0"
+PROJECT_AUTHOR = "Prashant Patel"
+
+# ----------------------------------------------------------
 # Gemini
 # ----------------------------------------------------------
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -27,8 +34,10 @@ USE_LLM = False
 # RAG Settings
 # ----------------------------------------------------------
 DEBUG_MODE = True
+
 CHUNK_SIZE = 800
-OVERLAP = 200
+CHUNK_OVERLAP = 200
+
 TOP_K = 5
 MAX_MEMORY_TURNS = 5
 
@@ -45,7 +54,20 @@ EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
 RERANKER_MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 
 # ----------------------------------------------------------
+# Embedding
+# ----------------------------------------------------------
+EMBEDDING_DIMENSION = 384
+
+# ----------------------------------------------------------
 # FAISS Storage
 # ----------------------------------------------------------
 FAISS_INDEX_FILE = FAISS_DIR / "index.faiss"
 FAISS_METADATA_FILE = FAISS_DIR / "metadata.pkl"
+
+# ----------------------------------------------------------
+# Future Features
+# ----------------------------------------------------------
+ENABLE_QUERY_REWRITE = True
+ENABLE_PARENT_RETRIEVAL = True
+ENABLE_RERANKING = True
+ENABLE_CONTEXT_COMPRESSION = True
