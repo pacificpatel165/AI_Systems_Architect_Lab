@@ -6,7 +6,7 @@ logger = get_logger(__name__)
 
 def load_reranker_model(model_name):
     reranker = CrossEncoder(model_name)
-    logger.info("Reranker Loaded")
+    logger.info(f"Loaded {model_name}")
     return reranker
 
 
@@ -15,6 +15,7 @@ def load_reranker_model(model_name):
 # ==========================================================
 def rerank_results(query, retrieved_indices, chunks, reranker):
     pairs = []
+    logger.debug("Reranking %d retrieved chunks", len(retrieved_indices))
     for idx in retrieved_indices:
         pairs.append([query, chunks[idx]["text"]])
 
@@ -22,6 +23,7 @@ def rerank_results(query, retrieved_indices, chunks, reranker):
     ranked_results = sorted(
         zip(retrieved_indices, scores), key=lambda x: x[1], reverse=True
     )
+    logger.info("Top reranked results: %d", len(ranked_results))
     return ranked_results
 
 

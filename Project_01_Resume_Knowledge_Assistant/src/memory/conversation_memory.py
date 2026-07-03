@@ -1,4 +1,8 @@
 import time
+from src.logger import get_logger
+
+logger = get_logger(__name__)
+
 
 # ==========================================================
 # Conversation Memory
@@ -19,6 +23,7 @@ def build_memory_context(conversation_memory, max_turns=5):
             Assistant Answer: {turn['answer']}
             {'-'*60}
         """
+    logger.debug("Building conversation context from %d turns", len(recent_turns))
     return memory_context
 
 
@@ -45,6 +50,7 @@ def save_to_memory(question, answer, top_indices, chunks, conversation_memory):
             "timestamp": time.time(),
         }
     )
+    logger.info("Conversation turn %d saved", len(conversation_memory))
 
 
 # ==========================================================

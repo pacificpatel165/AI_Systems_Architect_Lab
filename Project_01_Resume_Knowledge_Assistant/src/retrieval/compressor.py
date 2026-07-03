@@ -1,5 +1,8 @@
 import numpy as np
 from src.config import ENABLE_KEYWORD_COMPRESSION, ENABLE_SEMANTIC_COMPRESSION
+from src.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 # ==========================================================
@@ -38,12 +41,19 @@ def semantic_compress_context(question, context, embedding_model, top_n=20):
 # ==========================================================
 def compress_context(question, context, embedding_model):
     compressed_context = context
+    logger.debug("Starting context compression")
     if ENABLE_KEYWORD_COMPRESSION:
         compressed_context = keyword_compress_context(question, compressed_context)
+        logger.debug(
+            "Keyword compression reduced context from %d to %d characters",
+            len(context),
+            len(compressed_context),
+        )
     if ENABLE_SEMANTIC_COMPRESSION:
         compressed_context = semantic_compress_context(
             question, compressed_context, embedding_model
         )
+        logger.info("Context compressed to %d characters", len(compressed_context))
     return compressed_context
 
 

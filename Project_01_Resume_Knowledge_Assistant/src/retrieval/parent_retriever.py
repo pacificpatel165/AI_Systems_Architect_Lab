@@ -1,3 +1,8 @@
+from src.logger import get_logger
+
+logger = get_logger(__name__)
+
+
 # ==========================================================
 # Parent IDs
 # ==========================================================
@@ -7,6 +12,7 @@ def get_parent_ids(top_indices, chunks):
         parent_id = chunks[idx]["parent_id"]
         if parent_id not in parent_ids:
             parent_ids.append(parent_id)
+    logger.info("Retrieved %d unique parent documents", len(parent_ids))
     return parent_ids
 
 
@@ -24,6 +30,7 @@ def build_parent_context(parent_ids, parent_documents):
             Content: {parent['text']}
             {'='*80}
         """
+    logger.debug("Building context from %d parent documents", len(parent_ids))
     return context
 
 

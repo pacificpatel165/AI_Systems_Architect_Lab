@@ -1,3 +1,7 @@
+from src.logger import get_logger
+
+logger = get_logger(__name__)
+
 # ==========================================================
 # Follow-Up Words
 # ==========================================================
@@ -30,7 +34,9 @@ FOLLOWUP_WORDS = {
 # ==========================================================
 def is_followup_question(question):
     words = question.lower().replace("?", "").split()
-    return any(word in FOLLOWUP_WORDS for word in words)
+    followup = any(word in FOLLOWUP_WORDS for word in words)
+    logger.debug("Follow-up detection: %s", followup)
+    return followup
 
 
 # ==========================================================
@@ -38,7 +44,12 @@ def is_followup_question(question):
 # ==========================================================
 def get_recent_context(conversation_memory, max_turns=3):
     if len(conversation_memory) == 0:
+        logger.debug("Conversation memory is empty.")
         return []
+
+    logger.debug(
+        "Using last %d conversation turns", min(max_turns, len(conversation_memory))
+    )
     return conversation_memory[-max_turns:]
 
 
@@ -46,21 +57,25 @@ def get_recent_context(conversation_memory, max_turns=3):
 # Rewrite Query
 # ==========================================================
 def rewrite_query(question, conversation_memory):
-    # -----------------------------------------
+    logger.debug("Starting query rewriting")
+
+    # ------------------------------------------------------
     # No Memory
-    # -----------------------------------------
+    # ------------------------------------------------------
     if len(conversation_memory) == 0:
+        logger.debug("No conversation memory available. " "Skipping query rewrite.")
         return question
 
-    # -----------------------------------------
+    # ------------------------------------------------------
     # Independent Question
-    # -----------------------------------------
+    # ------------------------------------------------------
     if not is_followup_question(question):
+        logger.debug("Independent question detected. " "No rewrite required.")
         return question
 
-    # -----------------------------------------
+    # ------------------------------------------------------
     # Build Context
-    # -----------------------------------------
+    # ------------------------------------------------------
     recent_turns = get_recent_context(conversation_memory, max_turns=3)
     previous_questions = []
     previous_answers = []
@@ -70,13 +85,21 @@ def rewrite_query(question, conversation_memory):
         previous_answers.append(turn["answer"])
         for chunk in turn["retrieved_chunks"]:
             retrieved_context.append(chunk["text"])
-
     rewritten_query = f"""
         Current Question: {question}
-        Previous Questions: {' | '.join(previous_questions)}
-        Previous Answers: {' | '.join(previous_answers)}
-        Relevant Context:{' '.join(retrieved_context[:3])}
+        Previous Questions:
+        {' | '.join(previous_questions)}
+        Previous Answers:
+        {' | '.join(previous_answers)}
+        Relevant Context:
+        {' '.join(retrieved_context[:3])}
     """
+    logger.info(
+        "Query rewritten using %d conversation turns and %d retrieved chunks",
+        len(recent_turns),
+        len(retrieved_context),
+    )
+    logger.debug("Rewritten query length: %d characters", len(rewritten_query))
     return rewritten_query
 
 

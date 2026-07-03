@@ -1,6 +1,9 @@
 import argparse
 from src.bootstrap import initialize_system
 from tests.test_runner import run_tests
+from src.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 # ==========================================================
@@ -57,6 +60,7 @@ def parse_arguments():
 # Main
 # ==========================================================
 def main():
+    logger.info("Application started")
     args = parse_arguments()
     system = initialize_system()
     assistant = system.assistant
@@ -65,12 +69,13 @@ def main():
     # Test Mode
     # -----------------------------------------
     if args.test:
+        logger.info("Running test suite: %s", args.test)
         run_tests(assistant, args.test)
-
     # -----------------------------------------
     # Normal Mode
     # -----------------------------------------
     else:
+        logger.info("Running interactive application")
         run_application(assistant)
 
 

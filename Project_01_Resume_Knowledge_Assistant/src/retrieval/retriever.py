@@ -1,4 +1,8 @@
 import numpy as np
+from src.logger import get_logger
+
+logger = get_logger(__name__)
+
 
 # ==========================================================
 # Stop Words
@@ -28,6 +32,7 @@ STOP_WORDS = {
     "for",
 }
 
+
 # ==========================================================
 # Keyword Search
 # ==========================================================
@@ -46,6 +51,7 @@ def keyword_search(query, chunks):
             results.append((idx, score))
 
     results.sort(key=lambda x: x[1], reverse=True)
+    logger.debug("Keyword search returned %d matches", len(results))
     return [idx for idx, score in results]
 
 
@@ -57,6 +63,7 @@ def semantic_search(query, embedding_model, index, top_k=5):
     distances, indices = index.search(
         np.array(query_embedding).astype("float32"), top_k
     )
+    logger.info("Semantic search returned %d chunks", len(indices[0]))
     return indices[0].tolist()
 
 
@@ -76,6 +83,7 @@ def hybrid_search(query, embedding_model, index, chunks, semantic_k=5, final_k=8
         if idx not in combined:
             combined.append(idx)
 
+    logger.info("Hybrid retrieval selected %d chunks", len(combined[:final_k]))
     return combined[:final_k]
 
 

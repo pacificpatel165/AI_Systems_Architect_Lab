@@ -1,4 +1,8 @@
 from src.rewriting.query_rewriter import is_followup_question
+from src.logger import get_logger
+
+logger = get_logger(__name__)
+
 
 # ==========================================================
 # Query Types
@@ -45,17 +49,22 @@ def classify_question(question):
 # Retrieval Strategy
 # ==========================================================
 def get_retrieval_strategy(query_type):
+    logger.info("Query classified as '%s'", query_type)
     if query_type == FOLLOWUP_QUERY:
+        logger.debug("Strategy selected: %s", {"rewrite": True, "metadata": False, "parent": True, "compression": True})
         return {"rewrite": True, "metadata": False, "parent": True, "compression": True}
     if query_type == DOCUMENT_QUERY:
+        logger.debug("Strategy selected: %s", {"rewrite": False, "metadata": True, "parent": True, "compression": True})
         return {"rewrite": False, "metadata": True, "parent": True, "compression": True}
     if query_type == KEYWORD_QUERY:
+        logger.debug("Strategy selected: %s", {"rewrite": False, "metadata": False, "parent": False, "compression": False})
         return {
             "rewrite": False,
             "metadata": False,
             "parent": False,
             "compression": False,
         }
+    logger.debug("Strategy selected: %s", {"rewrite": False, "metadata": False, "parent": True, "compression": True})
     return {"rewrite": False, "metadata": False, "parent": True, "compression": True}
 
 
