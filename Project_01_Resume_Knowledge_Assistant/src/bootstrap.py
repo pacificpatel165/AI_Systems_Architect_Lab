@@ -66,7 +66,7 @@ def initialize_system():
         else:
             raise FileNotFoundError
     except Exception as e:
-        logger.exception("Existing vector store is invalid")
+        logger.exception("Existing vector store is invalid or not found: %s", str(e))
         embeddings = create_embeddings(chunks, embedding_model)
         index = build_faiss_index(embeddings)
         save_vector_store(index, chunks)
