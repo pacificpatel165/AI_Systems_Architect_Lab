@@ -221,3 +221,6 @@ __marimo__/
 .vscode/
 .code-workspace
 
+# Log files
+logs/*.log
+

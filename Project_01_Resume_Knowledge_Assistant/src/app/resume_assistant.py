@@ -21,6 +21,9 @@ from src.models import (
     RetrievalResult,
 )
 from src.models import AssistantResponse
+from src.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 # ==========================================================
@@ -55,11 +58,13 @@ class ResumeAssistant:
     # Retrieval Pipeline
     # ======================================================
     def _retrieve(self, question):
+        logger.info("Retrieval pipeline started")
         # ------------------------------------------
         # Query Classification
         # ------------------------------------------
         query_type = classify_question(question)
         strategy = get_retrieval_strategy(query_type)
+        logger.info("Query type: %s", query_type)
 
         # ------------------------------------------
         # Query Rewrite
@@ -99,6 +104,7 @@ class ResumeAssistant:
             rewritten_query, retrieved_indices, self.chunks, self.reranker
         )
         top_indices = get_top_reranked(ranked_results, top_n=3)
+        logger.info("Top %d chunks selected", len(top_indices))
 
         # Collect the enrich data of retriever
         retrieval_details = []
@@ -185,7 +191,7 @@ class ResumeAssistant:
             compression_ratio=100
             * (1 - len(compressed_context) / max(len(original_context), 1)),
         )
-
+        logger.info("Compression ratio %.2f%%", context.compression_ratio)
         memory = MemoryInfo(turns=len(self.conversation_memory))
 
         performance = PerformanceInfo(
@@ -226,8 +232,8 @@ class ResumeAssistant:
             return "LLM Disabled."
         try:
             answer = generate_response(self.llm_model, prompt)
-        except Exception as e:
-            answer = f"LLM Error: {e}"
+        except Exception:
+            logger.exception("LLM generation failed")
         return answer
 
     # ==========================================================
@@ -322,10 +328,14 @@ class ResumeAssistant:
     # ==========================================================
     def ask(self, question):
         start_time = time.perf_counter()
+        logger.info("Question received: %s", question)
         # --------------------------------------
         # Retrieval
         # --------------------------------------
         retrieval_result = self._retrieve(question)
+        logger.info(
+            "Retrieved %d chunks", retrieval_result.debug.performance.retrieved_chunks
+        )
 
         # --------------------------------------
         # Prompt
@@ -336,6 +346,7 @@ class ResumeAssistant:
         # LLM
         # --------------------------------------
         answer = self._generate_answer(prompt)
+        logger.info("Answer generated")
 
         # --------------------------------------
         # Memory
@@ -343,7 +354,9 @@ class ResumeAssistant:
         if DEBUG_MODE:
             self._debug(retrieval_result, answer)
         self._update_memory(question, answer, retrieval_result)
+        logger.info("Conversation updated")
         latency = time.perf_counter() - start_time
+        logger.info("Completed request in %.3f sec", latency)
         return AssistantResponse(
             question=question,
             answer=answer,

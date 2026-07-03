@@ -1,5 +1,8 @@
 from pypdf import PdfReader
 import os
+from src.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 # ==========================================================
@@ -29,13 +32,13 @@ def load_documents(document_folder):
     for file in os.listdir(document_folder):
         if file.endswith(".pdf"):
             pdf_files.append(os.path.join(document_folder, file))
-    print(f"PDF Files Found: " f"{len(pdf_files)}")
+    logger.info("Found %d PDF documents", len(pdf_files))
 
     for pdf_path in pdf_files:
         reader = PdfReader(pdf_path)
         source_file = os.path.basename(pdf_path)
         document_type = infer_document_type(source_file)
-        print(f"Loading: " f"{source_file}")
+        logger.info("Loading %s", source_file)
         for page_num, page in enumerate(reader.pages, start=1):
             text = page.extract_text()
             if text:
@@ -58,7 +61,7 @@ def load_documents(document_folder):
                     }
                 )
                 parent_id += 1
-
+    logger.info("Loaded %d pages", len(all_pages_data))
     return (all_pages_data, parent_documents)
 
 
@@ -88,5 +91,5 @@ def chunk_text_with_metadata(pages_data, chunk_size, overlap):
             )
             chunk_id += 1
             start += chunk_size - overlap
-
+    logger.info("Created %d chunks", len(chunks))
     return chunks

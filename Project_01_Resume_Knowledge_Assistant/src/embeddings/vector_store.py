@@ -3,6 +3,9 @@ import pickle
 import faiss
 import numpy as np
 from src.config import FAISS_INDEX_FILE, FAISS_METADATA_FILE
+from src.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 # ==========================================================
@@ -10,7 +13,7 @@ from src.config import FAISS_INDEX_FILE, FAISS_METADATA_FILE
 # ==========================================================
 def load_embedding_model(model_name):
     model = SentenceTransformer(model_name)
-    print("Embedding Model Loaded")
+    logger.info("Loading embedding model: %s", model_name)
     return model
 
 
@@ -19,7 +22,9 @@ def load_embedding_model(model_name):
 # ==========================================================
 def create_embeddings(chunks, embedding_model):
     chunk_texts = [chunk["text"] for chunk in chunks]
+    logger.info("Generating embeddings for %d chunks", len(chunks))
     embeddings = embedding_model.encode(chunk_texts, show_progress_bar=True)
+    logger.info("Embedding generation complete")
     return embeddings
 
 
@@ -30,7 +35,7 @@ def build_faiss_index(embeddings):
     dimension = embeddings.shape[1]
     index = faiss.IndexFlatL2(dimension)
     index.add(np.array(embeddings).astype("float32"))
-    print(f"Vectors Created : " f"{index.ntotal}")
+    logger.info("FAISS index created with %d vectors", index.ntotal)
     return index
 
 
@@ -41,7 +46,7 @@ def save_vector_store(index, chunks):
     faiss.write_index(index, str(FAISS_INDEX_FILE))
     with open(FAISS_METADATA_FILE, "wb") as file:
         pickle.dump(chunks, file)
-    print(f"Vectors Saved : {index.ntotal}")
+    logger.info("Vector store[%d] saved successfully", index.ntotal)
 
 
 # ==========================================================
@@ -54,11 +59,12 @@ def load_vector_store():
     print("=" * 80)
     print("VECTOR STORE LOADED")
     print("=" * 80)
-    print("Status         : Loaded from Cache")
-    print(f"Index File     : {FAISS_INDEX_FILE}")
-    print(f"Metadata File  : {FAISS_METADATA_FILE}")
-    print(f"Vectors Loaded : {index.ntotal}")
-    print(f"Chunks Loaded  : {len(chunks)}")
+    logger.info("Status         : Loaded from Cache")
+    logger.info("Index File     : %s", FAISS_INDEX_FILE)
+    logger.info("Metadata File  : %s", FAISS_METADATA_FILE)
+    logger.info("Vectors Loaded : %d", index.ntotal)
+    logger.info("Chunks Loaded  : %d", len(chunks))
+    logger.info("Loaded vector store (%d vectors)", index.ntotal)
     return (index, chunks)
 
 

@@ -1,9 +1,12 @@
 from sentence_transformers import CrossEncoder
+from src.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 def load_reranker_model(model_name):
     reranker = CrossEncoder(model_name)
-    print("Reranker Loaded")
+    logger.info("Reranker Loaded")
     return reranker
 
 
@@ -39,4 +42,4 @@ def print_reranked_results(ranked_results):
     print("=" * 80)
 
     for rank, (idx, score) in enumerate(ranked_results, start=1):
-        print(f"Rank={rank}" f"  Chunk={idx}" f"  Score={score:.4f}")
+        logger.info("Rank=%d  Chunk=%d  Score=%.4f", rank, idx, score)

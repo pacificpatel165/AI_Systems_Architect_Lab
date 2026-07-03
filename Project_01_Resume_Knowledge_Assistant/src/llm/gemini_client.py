@@ -1,7 +1,9 @@
 import time
 import google.generativeai as genai
 from src.config import GEMINI_API_KEY
+from src.logger import get_logger
 
+logger = get_logger(__name__)
 
 # ==========================================================
 # Load Gemini
@@ -9,7 +11,7 @@ from src.config import GEMINI_API_KEY
 def load_llm():
     genai.configure(api_key=GEMINI_API_KEY)
     model = genai.GenerativeModel("gemini-2.5-flash")
-    print("Gemini Loaded")
+    logger.info("Gemini Loaded: %s", "gemini-2.5-flash")
     return model
 
 
@@ -22,7 +24,6 @@ def generate_response(llm_model, prompt, retries=3):
             response = llm_model.generate_content(prompt)
             return response.text
         except Exception as e:
-            print(f"Retry {attempt+1}")
-            print(e)
+            logger.exception("Error occurred while generating response: %s", str(e))
             time.sleep(5)
             return {"success": False, "answer": "LLM unavailable.", "error": str(e)}
