@@ -1,25 +1,11 @@
-from src.llm.gemini_client import (
-    generate_response,
-)
-from src.config import *
+from src.llm.gemini_client import generate_response
+from src.config import DEBUG_MODE, USE_LLM, MAX_MEMORY_TURNS
 from src.rewriting.query_rewriter import rewrite_query
-from src.retrieval.strategy import (
-    classify_question,
-    get_retrieval_strategy,
-)
+from src.retrieval.strategy import classify_question, get_retrieval_strategy
 from src.retrieval.retriever import hybrid_search
-from src.retrieval.metadata_filter import (
-    get_document_filter,
-    filter_retrieved_results,
-)
-from src.retrieval.reranker import (
-    rerank_results,
-    get_top_reranked,
-)
-from src.retrieval.parent_retriever import (
-    get_parent_ids,
-    build_parent_context,
-)
+from src.retrieval.metadata_filter import get_document_filter, filter_retrieved_results
+from src.retrieval.reranker import rerank_results, get_top_reranked
+from src.retrieval.parent_retriever import get_parent_ids, build_parent_context
 from src.retrieval.compressor import compress_context
 from src.memory.conversation_memory import build_memory_context, save_to_memory
 from src.prompts.prompts import PROMPT_TEMPLATE
@@ -172,7 +158,7 @@ class ResumeAssistant:
             rewrite=strategy["rewrite"],
             metadata=strategy["metadata"],
             parent=strategy["parent"],
-            compression=strategy["compression"]
+            compression=strategy["compression"],
         )
         query = QueryInfo(
             question=question,

@@ -1,4 +1,11 @@
-from src.config import *
+from src.config import (
+    DOCUMENT_FOLDER,
+    CHUNK_SIZE,
+    CHUNK_OVERLAP,
+    FAISS_INDEX_FILE,
+    FAISS_METADATA_FILE,
+    DEBUG_MODE,
+)
 from src.loaders.document_loader import load_documents, chunk_text_with_metadata
 from src.embeddings.vector_store import (
     load_embedding_model,
@@ -61,11 +68,11 @@ def initialize_system():
         print("VECTOR STORE CREATED")
         print("=" * 80)
 
-        print(f"Status          : Building New Index")
+        print("Status          : Building New Index")
         print(f"Pages           : {len(all_pages_data)}")
         print(f"Chunks          : {len(chunks)}")
         print(f"Embedding Model : {EMBEDDING_MODEL_NAME}")
-        print(f"Saving Cache...")
+        print("Saving Cache...")
         print(f"✓ Index File     : {FAISS_INDEX_FILE}")
         print(f"✓ Metadata File  : {FAISS_METADATA_FILE}")
 

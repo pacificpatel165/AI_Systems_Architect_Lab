@@ -1,15 +1,8 @@
-from operator import index
-
-from sentence_transformers import SentenceTransformer, CrossEncoder
+from sentence_transformers import SentenceTransformer
 import pickle
-from pathlib import Path
 import faiss
 import numpy as np
-
-from src.config import (
-    FAISS_INDEX_FILE,
-    FAISS_METADATA_FILE,
-)
+from src.config import FAISS_INDEX_FILE, FAISS_METADATA_FILE
 
 
 # ==========================================================
@@ -61,7 +54,7 @@ def load_vector_store():
     print("=" * 80)
     print("VECTOR STORE LOADED")
     print("=" * 80)
-    print(f"Status         : Loaded from Cache")
+    print("Status         : Loaded from Cache")
     print(f"Index File     : {FAISS_INDEX_FILE}")
     print(f"Metadata File  : {FAISS_METADATA_FILE}")
     print(f"Vectors Loaded : {index.ntotal}")

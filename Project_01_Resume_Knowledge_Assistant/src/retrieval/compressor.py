@@ -1,5 +1,5 @@
 import numpy as np
-from src.config import *
+from src.config import ENABLE_KEYWORD_COMPRESSION, ENABLE_SEMANTIC_COMPRESSION
 
 
 # ==========================================================
