@@ -92,6 +92,12 @@ python main.py
 ## Run Streamlit
 streamlit run ui/streamlit_app.py
 
+## Run FastAPI
+uvicorn src.api.app:app --reload
+
+## Display FastAPI 
+http://127.0.0.1:8000/docs#/
+
 ## Run Tests
 python main.py --test all
 ```
