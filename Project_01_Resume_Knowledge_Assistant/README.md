@@ -90,11 +90,10 @@ pip install -r requirements/base.txt requirements/cpu.txt requirements/dev.txt
 python main.py
 
 ## Run Streamlit
-streamlit run ui/streamlit_app.py
 python -m streamlit run ui/streamlit_app.py
 
 ## Run FastAPI
-uvicorn src.api.app:app --reload
+python -m uvicorn src.api.app:app --reload
 
 ## Display FastAPI 
 http://127.0.0.1:8000/docs#/
