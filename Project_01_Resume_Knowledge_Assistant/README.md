@@ -91,6 +91,7 @@ python main.py
 
 ## Run Streamlit
 streamlit run ui/streamlit_app.py
+python -m streamlit run ui/streamlit_app.py
 
 ## Run FastAPI
 uvicorn src.api.app:app --reload
