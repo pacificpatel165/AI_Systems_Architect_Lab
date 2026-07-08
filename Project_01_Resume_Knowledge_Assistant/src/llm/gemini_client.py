@@ -1,29 +1,43 @@
 import time
-import google.generativeai as genai
-from src.config import GEMINI_API_KEY
+from google import genai
+
+from src.config import GEMINI_API_KEY, LLM_MODEL_NAME
 from src.logger import get_logger
 
 logger = get_logger(__name__)
+
 
 # ==========================================================
 # Load Gemini
 # ==========================================================
 def load_llm():
-    genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel("gemini-2.5-flash")
-    logger.info("Gemini Loaded: %s", "gemini-2.5-flash")
-    return model
+    logger.info("Initializing Gemini client: %s", LLM_MODEL_NAME)
+    client = genai.Client(api_key=GEMINI_API_KEY)
+    logger.info("Gemini client initialized: %s", LLM_MODEL_NAME)
+    return client
 
 
 # ==========================================================
 # Generate Response
 # ==========================================================
 def generate_response(llm_model, prompt, retries=3):
-    for attempt in range(retries):
+    for attempt in range(1, retries + 1):
         try:
-            response = llm_model.generate_content(prompt)
+            logger.debug("Generating Gemini response. Attempt %d/%d", attempt, retries)
+            response = llm_model.models.generate_content(
+                model=LLM_MODEL_NAME, contents=prompt
+            )
+            logger.info("Gemini response generated successfully")
             return response.text
-        except Exception as e:
-            logger.exception("Error occurred while generating response: %s", str(e))
-            time.sleep(5)
-            return {"success": False, "answer": "LLM unavailable.", "error": str(e)}
+        except Exception as error:
+            logger.exception(
+                "Gemini generation failed. Attempt %d/%d: %s",
+                attempt,
+                retries,
+                str(error),
+            )
+            if attempt < retries:
+                logger.warning("Retrying Gemini request in 5 seconds")
+                time.sleep(5)
+    logger.error("Gemini unavailable after %d attempts", retries)
+    return "LLM unavailable."
