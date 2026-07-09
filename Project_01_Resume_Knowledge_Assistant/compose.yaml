@@ -1,0 +1,17 @@
+services:
+  resume-assistant-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    image: resume-knowledge-assistant:5.0.0
+
+    container_name: resume-assistant-api
+
+    ports:
+      - "8000:8000"
+
+    environment:
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+
+    restart: unless-stopped
