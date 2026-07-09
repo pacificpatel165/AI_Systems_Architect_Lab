@@ -20,7 +20,7 @@ MEMORY_DIR = DATA_DIR / "memory"
 # Project Information
 # ----------------------------------------------------------
 PROJECT_NAME = "Resume Knowledge Assistant"
-PROJECT_VERSION = "4.0.0"
+PROJECT_VERSION = "5.0.0"
 PROJECT_AUTHOR = "Prashant Patel"
 
 # ----------------------------------------------------------
