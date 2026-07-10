@@ -102,6 +102,319 @@ http://127.0.0.1:8000/docs#/
 python main.py --test all
 ```
 
+## ⚙️ Runtime Configuration
+
+The Resume Knowledge Assistant supports environment-based runtime configuration.
+
+Runtime settings are loaded by `src/config.py` and can be configured using environment variables.
+
+| Environment Variable | Default | Description |
+|---|---|---|
+| `GEMINI_API_KEY` | None | Gemini API key used by the LLM client |
+| `USE_LLM` | `true` | Enables or disables Gemini LLM response generation |
+| `DEBUG_MODE` | `false` | Enables additional application debug logging |
+| `LOG_LEVEL` | `INFO` | Controls the application logging level |
+
+---
+
+### Gemini API Key
+
+The Gemini API key must be available as an environment variable.
+
+Example:
+
+```bash
+export GEMINI_API_KEY="your-api-key"
+```
+
+The application reads the value using:
+
+```python
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+```
+
+For local Linux or WSL development, the environment variable can be configured in `~/.bashrc`.
+
+```bash
+export GEMINI_API_KEY="your-api-key"
+```
+
+Reload the shell configuration:
+
+```bash
+source ~/.bashrc
+```
+
+Verify that the variable is available:
+
+```bash
+echo $GEMINI_API_KEY
+```
+
+> Never store API keys directly in `config.py`, Dockerfiles, GitHub workflow files, or source control.
+
+---
+
+### LLM Configuration
+
+LLM response generation is controlled using the `USE_LLM` environment variable.
+
+#### Enable Gemini LLM
+
+```bash
+export USE_LLM=true
+```
+
+The RAG pipeline can use Gemini to generate the final response.
+
+```text
+Question
+   ↓
+Query Rewrite
+   ↓
+Retrieval
+   ↓
+Parent Retrieval
+   ↓
+Reranking
+   ↓
+Context Compression
+   ↓
+Gemini LLM
+   ↓
+Generated Answer
+```
+
+#### Disable Gemini LLM
+
+```bash
+export USE_LLM=false
+```
+
+This disables Gemini response generation.
+
+This mode is useful for:
+
+- retrieval debugging
+- pipeline inspection
+- local development
+- testing retrieval behavior
+- reducing external API usage
+
+The retrieval pipeline can still execute, while LLM generation is disabled.
+
+---
+
+### Debug Mode
+
+Additional debug logging can be enabled using `DEBUG_MODE`.
+
+#### Enable Debug Mode
+
+```bash
+export DEBUG_MODE=true
+```
+
+Debug mode enables additional system diagnostic logging.
+
+Example:
+
+```text
+System statistics | Pages=8 Chunks=24 Vectors=24
+```
+
+#### Disable Debug Mode
+
+```bash
+export DEBUG_MODE=false
+```
+
+Debug mode is disabled by default and is recommended for normal runtime operation.
+
+---
+
+### Logging Configuration
+
+The application uses centralized logging through:
+
+```text
+src/logger.py
+```
+
+The logging level is controlled using the `LOG_LEVEL` environment variable.
+
+Supported standard Python logging levels include:
+
+| Log Level | Purpose |
+|---|---|
+| `DEBUG` | Detailed diagnostic information |
+| `INFO` | Normal application lifecycle information |
+| `WARNING` | Unexpected conditions that do not stop the application |
+| `ERROR` | Application operation failures |
+| `CRITICAL` | Severe application failures |
+
+The default logging level is:
+
+```text
+INFO
+```
+
+#### Enable Debug Logging
+
+```bash
+export LOG_LEVEL=DEBUG
+```
+
+Reload the shell environment if configured in `~/.bashrc`:
+
+```bash
+source ~/.bashrc
+```
+
+Start the application:
+
+```bash
+python main.py
+```
+
+Debug messages generated using:
+
+```python
+logger.debug(...)
+```
+
+will now be visible.
+
+#### Restore Normal Logging
+
+```bash
+export LOG_LEVEL=INFO
+```
+
+---
+
+### Debug Mode vs Log Level
+
+`DEBUG_MODE` and `LOG_LEVEL` serve different purposes.
+
+| Configuration | Responsibility |
+|---|---|
+| `DEBUG_MODE` | Controls whether the application generates additional diagnostic information |
+| `LOG_LEVEL` | Controls which log messages are displayed and stored |
+
+For complete debug logging, enable both:
+
+```bash
+export DEBUG_MODE=true
+export LOG_LEVEL=DEBUG
+```
+
+The flow is:
+
+```text
+DEBUG_MODE=true
+      ↓
+Application generates debug information
+      ↓
+logger.debug(...)
+
+LOG_LEVEL=DEBUG
+      ↓
+Logger accepts DEBUG messages
+      ↓
+Console + app.log
+```
+
+If:
+
+```bash
+export DEBUG_MODE=true
+export LOG_LEVEL=INFO
+```
+
+the application may generate debug log calls, but the logger filters them because the active logging level is `INFO`.
+
+---
+
+### Recommended Runtime Profiles
+
+#### Local Development
+
+```bash
+export USE_LLM=true
+export DEBUG_MODE=true
+export LOG_LEVEL=DEBUG
+```
+
+Recommended when developing or inspecting the RAG pipeline.
+
+#### Normal Local Runtime
+
+```bash
+export USE_LLM=true
+export DEBUG_MODE=false
+export LOG_LEVEL=INFO
+```
+
+Recommended for normal application usage.
+
+#### Retrieval Debugging
+
+```bash
+export USE_LLM=false
+export DEBUG_MODE=true
+export LOG_LEVEL=DEBUG
+```
+
+Recommended when inspecting retrieval, reranking, compression, and pipeline behavior without using the Gemini API.
+
+#### Production Runtime
+
+```bash
+export USE_LLM=true
+export DEBUG_MODE=false
+export LOG_LEVEL=INFO
+```
+
+Recommended for Docker and production-style execution.
+
+---
+
+### Docker Runtime Configuration
+
+Runtime configuration can be passed directly to the Docker container.
+
+```bash
+docker run \
+    --name resume-assistant-api \
+    -p 8000:8000 \
+    -e GEMINI_API_KEY="$GEMINI_API_KEY" \
+    -e USE_LLM=true \
+    -e DEBUG_MODE=false \
+    -e LOG_LEVEL=INFO \
+    <dockerhub-username>/resume-knowledge-assistant:5.0.1
+```
+
+Docker Compose can also provide the runtime configuration:
+
+```yaml
+environment:
+  GEMINI_API_KEY: ${GEMINI_API_KEY}
+  USE_LLM: ${USE_LLM:-true}
+  DEBUG_MODE: ${DEBUG_MODE:-false}
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+```
+
+This allows the same Docker image to run with different runtime profiles without rebuilding the image.
+
+```text
+Docker Image
+     │
+     ├── Development Configuration
+     ├── Debug Configuration
+     └── Production Configuration
+```
+
 ## 🐳 Docker
 
 The FastAPI backend is containerized using Docker with a CPU-only
