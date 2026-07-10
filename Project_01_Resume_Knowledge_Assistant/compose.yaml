@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
 
-    image: resume-knowledge-assistant:5.0.0
+    image: resume-knowledge-assistant:6.0.0
 
     container_name: resume-assistant-api
 

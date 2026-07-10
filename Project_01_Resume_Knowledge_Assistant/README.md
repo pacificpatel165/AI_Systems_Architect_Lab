@@ -6,15 +6,25 @@ An AI-powered **Retrieval-Augmented Generation (RAG)** application that answers 
 
 ## Features
 
+- Retrieval-Augmented Generation (RAG)
 - Semantic Search using FAISS
 - Parent Document Retrieval
+- Query Rewriting
 - Context Compression
-- Cross Encoder Re-ranking
+- Cross-Encoder Re-ranking
 - Conversation Memory
+- Google Gemini Integration
+- FastAPI REST API
 - Streamlit Dashboard
-- Retrieval Debugger
+- Retrieval Inspector
+- Pipeline Visualization
 - Document Explorer
-- Modular Architecture
+- Centralized Application Logging
+- Environment-Based Runtime Configuration
+- Docker Containerization
+- Docker Compose
+- GitHub Actions CI/CD
+- Modular Python Architecture
 
 ---
 
@@ -65,42 +75,84 @@ An AI-powered **Retrieval-Augmented Generation (RAG)** application that answers 
 ## Technology Stack
 
 | Component | Technology |
-|------------|------------|
+|---|---|
 | Language | Python 3.13 |
 | UI | Streamlit |
+| API | FastAPI |
+| ASGI Server | Uvicorn |
 | LLM | Google Gemini 2.5 Flash |
 | Embeddings | all-MiniLM-L6-v2 |
 | Re-ranking | Cross Encoder |
-| Vector DB | FAISS |
+| Vector Store | FAISS |
 | PDF Parsing | PyPDF |
-| Testing | Custom Test Framework |
+| Containerization | Docker |
+| Container Orchestration | Docker Compose |
+| CI/CD | GitHub Actions |
+| Testing | Custom RAG Test Framework |
+| Code Quality | Ruff |
 
 ---
 
 ## Installation
 
+Clone the repository:
+
 ```bash
 git clone https://github.com/pacificpatel165/AI_Systems_Architect_Lab.git
+```
 
-cd Project_01_Resume_Knowledge_Assistant
+Navigate to the project:
 
-pip install -r requirements/base.txt requirements/cpu.txt requirements/dev.txt
+```bash
+cd AI_Systems_Architect_Lab/Project_01_Resume_Knowledge_Assistant
+```
 
-## Run CLI
+Create a virtual environment:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements/cpu.txt
+pip install -r requirements/base.txt
+pip install -r requirements/dev.txt
+```
+
+### Run CLI
+
+```bash
 python main.py
+```
 
-## Run Streamlit
+### Run Streamlit
+
+```bash
 python -m streamlit run ui/streamlit_app.py
+```
 
-## Run FastAPI
+### Run FastAPI
+
+```bash
 python -m uvicorn src.api.app:app --reload
+```
 
-## Display FastAPI 
-http://127.0.0.1:8000/docs#/
+Open the FastAPI documentation:
 
-## Run Tests
+```text
+http://127.0.0.1:8000/docs
+```
+
+### Run Tests
+
+```bash
 python main.py --test all
 ```
+
+---
 
 ## ⚙️ Runtime Configuration
 
@@ -392,7 +444,7 @@ docker run \
     -e USE_LLM=true \
     -e DEBUG_MODE=false \
     -e LOG_LEVEL=INFO \
-    <dockerhub-username>/resume-knowledge-assistant:5.0.1
+    <dockerhub-username>/resume-knowledge-assistant:6.0.0
 ```
 
 Docker Compose can also provide the runtime configuration:
@@ -415,6 +467,8 @@ Docker Image
      └── Production Configuration
 ```
 
+---
+
 ## 🐳 Docker
 
 The FastAPI backend is containerized using Docker with a CPU-only
@@ -433,7 +487,7 @@ The Docker image includes:
 ### Build the Image
 
 ```bash
-docker build -t resume-knowledge-assistant:5.0.0 .
+docker build -t resume-knowledge-assistant:6.0.0 .
 ````
 
 ### Run the Container
@@ -443,7 +497,7 @@ docker run \
     --name resume-assistant-api \
     -p 8000:8000 \
     -e GEMINI_API_KEY="$GEMINI_API_KEY" \
-    resume-knowledge-assistant:5.0.0
+    resume-knowledge-assistant:6.0.0
 ```
 
 Open the FastAPI documentation:
@@ -451,6 +505,8 @@ Open the FastAPI documentation:
 ```text
 http://localhost:8000/docs
 ```
+
+---
 
 ## 🐳 Docker Compose
 
@@ -480,62 +536,77 @@ Stop the application:
 docker compose down
 ```
 
+---
+
 ## 🔄 Continuous Integration
 
 The project uses GitHub Actions for Continuous Integration.
 
-The CI pipeline runs automatically on:
-
-* Push to `main`
-* Pull requests targeting `main`
-
-Pipeline stages:
+Project 01 CI is isolated using a project-specific workflow:
 
 ```text
-Code Quality and Tests
-        │
-        ├── Python 3.13
-        ├── CPU PyTorch
-        ├── Application Dependencies
-        ├── Development Dependencies
-        ├── Ruff
-        └── RAG Test Suite
+.github/workflows/project-01-ci.yml
+```
+
+The CI pipeline runs automatically when changes are pushed to the
+Project 01 directory or when a pull request modifies Project 01.
+
+```text
+Project_01_Resume_Knowledge_Assistant/**
+                ↓
+        Project 01 CI
+                ↓
+     Code Quality and Tests
                 │
-                ▼
-           Docker Build
+                ├── Python 3.13
+                ├── CPU PyTorch
+                ├── Application Dependencies
+                ├── Development Dependencies
+                ├── Ruff
+                └── RAG Test Suite
+                        │
+                        ▼
+                   Docker Build
 ```
 
 The Docker image is built only after code quality checks and tests
 complete successfully.
 
-CI workflow:
+---
+
+## 🚀 Continuous Deployment
+
+Project 01 uses a dedicated GitHub Actions CD workflow:
 
 ```text
-.github/workflows/ci.yaml
+.github/workflows/project-01-cd.yml
 ```
 
-## 🔐 Environment Configuration
-
-The application requires the following environment variable:
+The CD pipeline is triggered when a Git release tag is pushed.
 
 ```text
-GEMINI_API_KEY
+Git Tag
+   ↓
+Project 01 CD
+   ↓
+Docker Build
+   ↓
+Docker Hub Login
+   ↓
+Docker Image Publish
 ```
 
-For local Linux or WSL development, configure the variable in the shell
-environment.
-
-Example:
+Example release:
 
 ```bash
-export GEMINI_API_KEY="YOUR_API_KEY"
+git tag v6.0.0
+git push origin v6.0.0
 ```
 
-The application reads configuration from the environment and does not
-store the Gemini API key in the source code.
+The CD workflow builds and publishes the production Docker image to
+Docker Hub.
 
-Docker Compose passes the environment variable into the container at
-runtime.
+---
 
 ## 🧪 Validation
 

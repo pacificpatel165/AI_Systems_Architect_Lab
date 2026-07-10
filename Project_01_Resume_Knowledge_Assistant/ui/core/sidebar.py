@@ -1,6 +1,6 @@
 import platform
 import streamlit as st
-from src.version import __version__
+from src.config import PROJECT_VERSION
 
 
 # ==========================================================
@@ -49,4 +49,4 @@ def render_sidebar(system):
     st.sidebar.divider()
     st.sidebar.markdown("### 📦 Version")
     st.sidebar.write("Resume Knowledge Assistant")
-    st.sidebar.caption(f"Version {__version__}")
+    st.sidebar.caption(f"Version {PROJECT_VERSION}")

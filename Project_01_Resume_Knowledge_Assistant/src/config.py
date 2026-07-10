@@ -40,7 +40,7 @@ LOG_DIR = PROJECT_ROOT / "logs"
 # Project Information
 # ----------------------------------------------------------
 PROJECT_NAME = "Resume Knowledge Assistant"
-PROJECT_VERSION = "5.0.1"
+PROJECT_VERSION = "6.0.0"
 PROJECT_AUTHOR = "Prashant Patel"
 
 
