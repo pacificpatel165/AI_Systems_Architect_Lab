@@ -15,3 +15,16 @@ services:
       GEMINI_API_KEY: ${GEMINI_API_KEY}
 
     restart: unless-stopped
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health', timeout=5)",
+        ]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
